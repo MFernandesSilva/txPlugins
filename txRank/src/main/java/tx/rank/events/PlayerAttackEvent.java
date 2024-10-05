@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import tx.api.Mensagem;
 import tx.rank.RankSystem;
 
@@ -53,6 +54,9 @@ public class PlayerAttackEvent implements Listener {
             if (danoAdicional > 0) {
                 event.setDamage(danoOriginal + danoAdicional);
                 entity.getWorld().strikeLightning(entity.getLocation()); // Chama um raio na localização da entidade
+                if (event.getCause() == EntityDamageEvent.DamageCause.FIRE || event.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK || event.getCause() == EntityDamageEvent.DamageCause.LIGHTNING) {
+                    event.setDamage(0);
+                }
                 player.sendMessage(Mensagem.formatar("&eVocê causou um dano adicional com um raio!"));
             }
         }

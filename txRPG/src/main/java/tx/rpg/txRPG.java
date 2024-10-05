@@ -6,6 +6,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import tx.api.DBC;
 import tx.api.DM;
+import tx.api.NBT;
 import tx.rpg.commands.AtributosCommand;
 import tx.rpg.commands.CriarEquipamentosCommand;
 import tx.rpg.commands.RompimentoRunasCommand;
@@ -62,6 +63,7 @@ public class txRPG extends JavaPlugin {
         DM.onEnable(this);
 
         Bukkit.getScheduler().runTaskTimer(this, this::atualizarAtributos, 20L, 20L);
+        Bukkit.getScheduler().runTaskTimer(this, this::regen, 100L, 100L);
 
         new BukkitRunnable(){
             @Override
@@ -127,6 +129,19 @@ public class txRPG extends JavaPlugin {
             RunasPlayerData runasPlayerData = getRunasPlayerData().get(player.getUniqueId());
             if (playerData != null && runasPlayerData != null) {
                 CalcularStatus.calcularAtributos(playerData, runasPlayerData);
+            }
+        }
+    }
+
+    private void regen(){
+        for (Player player : Bukkit.getOnlinePlayers()){
+            PlayerData playerData = getPlayerData().get(player.getUniqueId());
+            if (playerData != null){
+                if (getVidaArmazenada(player) < DBC.getMaxHealth(player)) {
+                    int vida = getVidaArmazenada(player) + playerData.getRegenVida();
+                    DBC.setHealthCapped(player, vida);
+                    player.sendMessage("log regen");
+                }
             }
         }
     }

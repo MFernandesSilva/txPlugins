@@ -1,5 +1,6 @@
 package tx.rpg.events;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -19,7 +20,9 @@ public class PlayerJoinAndQuit implements Listener {
         Player player = e.getPlayer();
         txRPG.getInstance().db().carregarDadosJogadorAsync(player);
         txRPG.getInstance().runasDB().carregarDadosJogadorAsync(player);
-        player.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&7Reequipe sua armadura para ter seus atributos."));
+        Bukkit.getScheduler().runTaskLater(txRPG.getInstance(), () -> {
+            player.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&7Reequipe sua armadura para ter seus atributos."));
+        }, 40L);
     }
 
     @EventHandler

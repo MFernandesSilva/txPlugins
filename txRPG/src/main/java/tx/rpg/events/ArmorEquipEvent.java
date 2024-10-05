@@ -28,28 +28,27 @@ public class ArmorEquipEvent implements Listener {
         PlayerData playerData = txRPG.getInstance().getPlayerData().get(playerUUID);
         RunasPlayerData runasPlayerData = txRPG.getInstance().getRunasPlayerData().get(playerUUID);
         if (playerData == null) return;
-        if (isEquipamentoPersonalizado(event.getArmor())){
-            if (event.getAction() == PlayerArmorEquipEvent.ArmorAction.EQUIP){
+        if (isEquipamentoPersonalizado(event.getArmor())) {
+            if (event.getAction() == PlayerArmorEquipEvent.ArmorAction.EQUIP) {
                 handleEquipamentChange(player, playerUUID, playerData, event.getArmor());
                 event.getPlayer().sendMessage(ChatColor.GREEN + "Você equipou a armadura: " + event.getArmor().getItemMeta().getDisplayName());
-            } else if (event.getAction() == PlayerArmorEquipEvent.ArmorAction.UNEQUIP){
-                restaurarAtributosOriginais(playerUUID, playerData, runasPlayerData);
+            } else if (event.getAction() == PlayerArmorEquipEvent.ArmorAction.UNEQUIP) {
+                handleUnequipamentChange(player, playerUUID, playerData, event.getArmor());
                 event.getPlayer().sendMessage(ChatColor.RED + "Você desequipou a armadura: " + event.getArmor().getItemMeta().getDisplayName());
             }
         }
     }
 
-
-    private boolean isEquipamentoPersonalizado(ItemStack item){
+    private boolean isEquipamentoPersonalizado(ItemStack item) {
         return NBT.hasNBTKey(item, "dano") && NBT.hasNBTKey(item, "defesa") && NBT.hasNBTKey(item, "intel")
-                && NBT.hasNBTKey(item, "ampCombate") && NBT.hasNBTKey(item, "alcance") && NBT.hasNBTKey(item,"penDefesa")
+                && NBT.hasNBTKey(item, "ampCombate") && NBT.hasNBTKey(item, "alcance") && NBT.hasNBTKey(item, "penDefesa")
                 && NBT.hasNBTKey(item, "bloqueio") && NBT.hasNBTKey(item, "rouboVida")
-                && NBT.hasNBTKey(item, "regenVida") && NBT.hasNBTKey(item,"regenMana") && NBT.hasNBTKey(item, "sorte");
+                && NBT.hasNBTKey(item, "regenVida") && NBT.hasNBTKey(item, "regenMana") && NBT.hasNBTKey(item, "sorte");
     }
 
     private void aplicarAtributosItem(PlayerData playerData, double dano, double defesa, int intel,
                                       int ampCombate, int alcance, double penDefesa, int bloqueio,
-                                      int rouboVida, int regenVida, int regenMana, int sorte){
+                                      int rouboVida, int regenVida, int regenMana, int sorte) {
         playerData.setDano(playerData.getDano() + dano);
         playerData.setDefesa(playerData.getDefesa() + defesa);
         playerData.setIntel(playerData.getIntel() + intel);
@@ -63,22 +62,20 @@ public class ArmorEquipEvent implements Listener {
         playerData.setSorte(playerData.getSorte() + sorte);
     }
 
-    private void restaurarAtributosOriginais(UUID playerUUID, PlayerData playerData, RunasPlayerData runasPlayerData) {
-        PlayerData originalData = originalAttributes.remove(playerUUID);
-
-        playerData.setDano(originalData.getDano());
-        playerData.setDefesa(originalData.getDefesa());
-        playerData.setIntel(originalData.getIntel());
-        playerData.setAmpCombate(originalData.getAmpCombate());
-        playerData.setAlcance(originalData.getAlcance());
-        playerData.setPenDefesa(originalData.getPenDefesa());
-        playerData.setBloqueio(originalData.getBloqueio());
-        playerData.setRouboVida(originalData.getRouboVida());
-        playerData.setRegenVida(originalData.getRegenVida());
-        playerData.setRegenMana(originalData.getRegenMana());
-        playerData.setSorte(originalData.getSorte());
-
-        CalcularStatus.calcularAtributos(playerData, runasPlayerData);
+    private void removerAtributosItem(PlayerData playerData, double dano, double defesa, int intel,
+                                      int ampCombate, int alcance, double penDefesa, int bloqueio,
+                                      int rouboVida, int regenVida, int regenMana, int sorte) {
+        playerData.setDano(playerData.getDano() - dano);
+        playerData.setDefesa(playerData.getDefesa() - defesa);
+        playerData.setIntel(playerData.getIntel() - intel);
+        playerData.setAmpCombate(playerData.getAmpCombate() - ampCombate);
+        playerData.setAlcance(playerData.getAlcance() - alcance);
+        playerData.setPenDefesa(playerData.getPenDefesa() - penDefesa);
+        playerData.setBloqueio(playerData.getBloqueio() - bloqueio);
+        playerData.setRouboVida(playerData.getRouboVida() - rouboVida);
+        playerData.setRegenVida(playerData.getRegenVida() - regenVida);
+        playerData.setRegenMana(playerData.getRegenMana() - regenMana);
+        playerData.setSorte(playerData.getSorte() - sorte);
     }
 
     private void handleEquipamentChange(Player player, UUID playerUUID, PlayerData playerData, ItemStack newItem) {
@@ -97,25 +94,51 @@ public class ArmorEquipEvent implements Listener {
 
             if (!originalAttributes.containsKey(playerUUID)) {
                 originalAttributes.put(playerUUID, playerData.clone());
-            } else {
-                PlayerData originalData = originalAttributes.get(playerUUID);
-                playerData.setDano(originalData.getDano());
-                playerData.setDefesa(originalData.getDefesa());
-                playerData.setIntel(originalData.getIntel());
-                playerData.setAmpCombate(originalData.getAmpCombate());
-                playerData.setAlcance(originalData.getAlcance());
-                playerData.setPenDefesa(originalData.getPenDefesa());
-                playerData.setBloqueio(originalData.getBloqueio());
-                playerData.setRouboVida(originalData.getRouboVida());
-                playerData.setRegenVida(originalData.getRegenVida());
-                playerData.setRegenMana(originalData.getRegenMana());
-                playerData.setSorte(originalData.getSorte());
-
             }
+
             aplicarAtributosItem(playerData, dano, defesa, intel, ampCombate, alcance, penDefesa, bloqueio, rouboVida, regenVida, regenMana, sorte);
 
         } catch (NumberFormatException e) {
             player.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cEste item não é um equipamento válido."));
         }
+    }
+
+    private void handleUnequipamentChange(Player player, UUID playerUUID, PlayerData playerData, ItemStack oldItem) {
+        try {
+            double dano = NBT.getNBT(oldItem, "dano", Double.class);
+            double defesa = NBT.getNBT(oldItem, "defesa", Double.class);
+            int intel = NBT.getNBT(oldItem, "intel", Integer.class);
+            int ampCombate = NBT.getNBT(oldItem, "ampCombate", Integer.class);
+            int alcance = NBT.getNBT(oldItem, "alcance", Integer.class);
+            double penDefesa = NBT.getNBT(oldItem, "penDefesa", Double.class);
+            int bloqueio = NBT.getNBT(oldItem, "bloqueio", Integer.class);
+            int rouboVida = NBT.getNBT(oldItem, "rouboVida", Integer.class);
+            int regenVida = NBT.getNBT(oldItem, "regenVida", Integer.class);
+            int regenMana = NBT.getNBT(oldItem, "regenMana", Integer.class);
+            int sorte = NBT.getNBT(oldItem, "sorte", Integer.class);
+
+            removerAtributosItem(playerData, dano, defesa, intel, ampCombate, alcance, penDefesa, bloqueio, rouboVida, regenVida, regenMana, sorte);
+
+        } catch (NumberFormatException e) {
+            player.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cEste item não é um equipamento válido."));
+        }
+    }
+
+    private void restaurarAtributosOriginais(UUID playerUUID, PlayerData playerData, RunasPlayerData runasPlayerData) {
+        PlayerData originalData = originalAttributes.remove(playerUUID);
+
+        playerData.setDano(originalData.getDano());
+        playerData.setDefesa(originalData.getDefesa());
+        playerData.setIntel(originalData.getIntel());
+        playerData.setAmpCombate(originalData.getAmpCombate());
+        playerData.setAlcance(originalData.getAlcance());
+        playerData.setPenDefesa(originalData.getPenDefesa());
+        playerData.setBloqueio(originalData.getBloqueio());
+        playerData.setRouboVida(originalData.getRouboVida());
+        playerData.setRegenVida(originalData.getRegenVida());
+        playerData.setRegenMana(originalData.getRegenMana());
+        playerData.setSorte(originalData.getSorte());
+
+        CalcularStatus.calcularAtributos(playerData, runasPlayerData);
     }
 }

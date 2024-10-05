@@ -192,7 +192,7 @@ public class ConfirmacaoPrompt extends ValidatingPrompt {
                 .setNBT("regenVida", regenVidaNBT)
                 .setNBT("regenMana", regenManaNBT)
                 .setNBT("sorte", sorteNBT)
-                .setEnchant(Enchantment.PROTECTION_ENVIRONMENTAL, 1000, true)
+                .setEnchant(Enchantment.DURABILITY, 1000, true)
                 .setUmbreakable(true)
                 .getIs();
 
