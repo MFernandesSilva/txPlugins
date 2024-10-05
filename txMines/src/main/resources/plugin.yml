@@ -1,0 +1,8 @@
+name: txMines
+main: tx.mines.txMines
+version: 1.0
+depend:
+  - txAPI
+load: POSTWORLD
+commands:
+  mina:

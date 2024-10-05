@@ -1,0 +1,8 @@
+name: txCustomArmor
+main: tx.customarmor.txCustomArmor
+version: 1.0
+depend:
+  - txAPI
+load: POSTWORLD
+commands:
+  armadura:

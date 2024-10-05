@@ -1,0 +1,18 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="txAPI:jar">
+    <output-path>$PROJECT_DIR$/../../API</output-path>
+    <root id="archive" name="txAPI.jar">
+      <element id="module-output" name="txAPI" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../1.7.10/Api's/1.7.10/item-nbt-api-plugin-2.10.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../1.7.10/Api's/Vault.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../1.7.10/Api's/1.7.10/PowerNBT.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../1.7.10/Api's/MVdWPlaceholderAPI.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../1.7.10/Api's/1.7.10/- Spigot API 1.7.10.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../API/ProtocolLib (8).jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../API/PermissionsEx.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../API/PlaceholderAPI-2.10.9.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../1.7.10/Api's/1.7.10/spigot-1.7.10-SNAPSHOT-b1657.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../1.7.10/Api's/1.7.10/sqlite-jdbc-3.46.0.0.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

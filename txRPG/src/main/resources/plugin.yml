@@ -1,0 +1,12 @@
+name: txRPG
+main: tx.rpg.txRPG
+version: 1.0
+depend:
+  - txAPI
+commands:
+  atributos:
+    aliases:
+      - status
+  criarequipamento:
+  runas:
+  rompimento:

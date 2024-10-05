@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="txCustomArmor:jar">
+    <output-path>$PROJECT_DIR$/../../Plugins</output-path>
+    <root id="archive" name="txCustomArmor.jar">
+      <element id="module-output" name="txCustomArmor" />
+    </root>
+  </artifact>
+</component>

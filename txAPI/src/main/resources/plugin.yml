@@ -1,0 +1,4 @@
+name: txAPI
+main: tx.api.txAPI
+version: 1.0
+load: STARTUP

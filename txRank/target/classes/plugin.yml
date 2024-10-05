@@ -1,0 +1,9 @@
+name: txRank
+main: tx.rank.txRank
+version: 1.0
+depend:
+  - txAPI
+load: POSTWORLD
+commands:
+  exp:
+  rank:

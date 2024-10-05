@@ -1,0 +1,21 @@
+<component name="libraryTable">
+  <library name="item-nbt-api-plugin-2.10.0">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../../1.7.10/Api's/1.7.10/item-nbt-api-plugin-2.10.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../1.7.10/Api's/Vault.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../1.7.10/Api's/1.7.10/PowerNBT.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../1.7.10/Api's/MVdWPlaceholderAPI.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../1.7.10/Api's/1.7.10/- Spigot API 1.7.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../API/ProtocolLib (8).jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../API/PermissionsEx.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../API/PlaceholderAPI-2.10.9.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../1.7.10/Api's/1.7.10/spigot-1.7.10-SNAPSHOT-b1657.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../1.7.10/Api's/1.7.10/sqlite-jdbc-3.46.0.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/../../1.7.10/Api's/1.7.10/- Spigot API 1.7.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../1.7.10/Api's/1.7.10/spigot-1.7.10-SNAPSHOT-b1657.jar!/" />
+    </SOURCES>
+  </library>
+</component>

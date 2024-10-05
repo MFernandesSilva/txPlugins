@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="txRank:jar">
+    <output-path>$PROJECT_DIR$/../../Plugins</output-path>
+    <root id="archive" name="txRank.jar">
+      <element id="module-output" name="txRank" />
+    </root>
+  </artifact>
+</component>
