@@ -80,7 +80,7 @@ public class AtributosCommand implements CommandExecutor {
                 loreGeral.add(Mensagem.formatar("&b➪ Inteligência: &7" + playerData.getIntel()));
                 loreGeral.add(Mensagem.formatar("&b➪ Regeneração de Mana: &7" + formatarNumero(playerData.getRegenMana())));
                 loreGeral.add(Mensagem.formatar("&b➪ Amplificação de Combate: &7" + formatarNumero(playerData.getAmpCombate() + runaAmpCombate.getValorAtributo()) + "%"));
-                loreGeral.add(Mensagem.formatar("&b➪ Penetração de Defesa: &7" + playerData.getPenDefesa()));
+                loreGeral.add(Mensagem.formatar("&b➪ Penetração de Defesa: &7" + formatarNumero(playerData.getPenDefesa())));
                 loreGeral.add(Mensagem.formatar("&b➪ Sorte: &7" + playerData.getSorte()));
                 loreGeral.add(" ");
             }
@@ -172,7 +172,7 @@ public class AtributosCommand implements CommandExecutor {
                     loreGeral.add(Mensagem.formatar("&b➪ Inteligencia: &7" + playerData.getIntel()));
                     loreGeral.add(Mensagem.formatar("&b➪ Regeneração de Mana: &7" + formatarNumero(playerData.getRegenMana())));
                     loreGeral.add(Mensagem.formatar("&b➪ Amplificação de Combate: &7" + formatarNumero(playerData.getAmpCombate() + runaAmpCombate.getValorAtributo()) + "%"));
-                    loreGeral.add(Mensagem.formatar("&b➪ Penetração de Defesa: &7" + playerData.getPenDefesa()));
+                    loreGeral.add(Mensagem.formatar("&b➪ Penetração de Defesa: &7" + formatarNumero(playerData.getPenDefesa())));
                     loreGeral.add(Mensagem.formatar("&b➪ Sorte: &7" + playerData.getSorte()));
                     loreGeral.add(" ");
                 }

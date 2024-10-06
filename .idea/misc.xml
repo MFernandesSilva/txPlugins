@@ -14,6 +14,8 @@
         <option value="$PROJECT_DIR$/txRPG/pom.xml" />
         <option value="$PROJECT_DIR$/txCustomArmor/pom.xml" />
         <option value="$PROJECT_DIR$/txRank/pom.xml" />
+        <option value="$PROJECT_DIR$/txRaids/pom.xml" />
+        <option value="$PROJECT_DIR$/txChest/pom.xml" />
       </list>
     </option>
   </component>

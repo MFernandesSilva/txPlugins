@@ -7,10 +7,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import tx.api.DBC;
 import tx.api.DM;
 import tx.api.NBT;
-import tx.rpg.commands.AtributosCommand;
-import tx.rpg.commands.CriarEquipamentosCommand;
-import tx.rpg.commands.RompimentoRunasCommand;
-import tx.rpg.commands.RunasCommand;
+import tx.rpg.commands.*;
 import tx.rpg.config.Config;
 import tx.rpg.data.DatabaseManager;
 import tx.rpg.data.PlayerData;
@@ -89,6 +86,7 @@ public class txRPG extends JavaPlugin {
         getCommand("criarequipamento").setExecutor(new CriarEquipamentosCommand());
         getCommand("runas").setExecutor(new RunasCommand());
         getCommand("rompimento").setExecutor(new RompimentoRunasCommand());
+        getCommand("infoatributos").setExecutor(new AtributosInfoCommand());
     }
 
     private void registerEvents(){
@@ -100,6 +98,8 @@ public class txRPG extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ArmorEquipEvent(), this);
         getServer().getPluginManager().registerEvents(new InventoryClickEvent(), this);
         getServer().getPluginManager().registerEvents(new UseRunas(), this);
+        getServer().getPluginManager().registerEvents(new InfoAtributosInvEvent(), this);
+        getServer().getPluginManager().registerEvents(new LightningEvent(), this);
     }
 
     public static txRPG getInstance() { return instance; }
@@ -140,7 +140,6 @@ public class txRPG extends JavaPlugin {
                 if (getVidaArmazenada(player) < DBC.getMaxHealth(player)) {
                     int vida = getVidaArmazenada(player) + playerData.getRegenVida();
                     DBC.setHealthCapped(player, vida);
-                    player.sendMessage("log regen");
                 }
             }
         }

@@ -105,9 +105,12 @@ public class RunasDatabaseManager {
             Bukkit.getScheduler().runTask(txRPG.getInstance(), () -> {
                 txRPG.getInstance().getRunasPlayerData().put(player.getUniqueId(), finalPlayerData);
 
+                /*
                 if (player.getName().equalsIgnoreCase("Teux")) {
                     aplicarAtributosERunas(finalPlayerData);
                 }
+
+                 */
             });
         });
     }

@@ -46,6 +46,8 @@ public class AtributosPrompt extends NumericPrompt {
             case "regenMana":
                 return new AtributosPrompt("sorte", Mensagem.formatar("&7Digite a sorte do equipamento:"));
             case "sorte":
+                return new AtributosPrompt("aoe", Mensagem.formatar("&7Digite o AOE do equipamento:"));
+            case "aoe":
                 return new ConfirmacaoPrompt();
             default:
                 return Prompt.END_OF_CONVERSATION;

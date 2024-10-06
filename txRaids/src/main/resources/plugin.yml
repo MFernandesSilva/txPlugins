@@ -1,0 +1,9 @@
+name: txRaids
+main: tx.raids.txRaids
+version: 1.0
+depend:
+  - txAPI
+  - WorldEdit
+  - WorldGuard
+load: POSTWORLD
+commands:

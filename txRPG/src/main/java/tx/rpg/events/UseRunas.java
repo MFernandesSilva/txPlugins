@@ -63,6 +63,10 @@ public class UseRunas implements Listener {
             return;
         }
 
+        Bukkit.getLogger().info("Nivel da runa do jogador: " + runaPlayer.getNivel());
+        Bukkit.getLogger().info("Nivel da runa usada: " + nivelRunaUsada);
+        Bukkit.getLogger().info("Tem rompimento: " + temRompimento(player, tipo, nivelRunaUsada));
+
         if (runaPlayer.getNivel() == nivelRunaUsada && temRompimento(player, tipo, nivelRunaUsada)) {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "runas upgrade " + tipo + " " + player.getName());
             if (itemUsado.getAmount() > 1){

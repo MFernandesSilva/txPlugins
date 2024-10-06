@@ -29,6 +29,19 @@ public class NBT {
         nbtItem.applyNBT(item);
     }
 
+    public static <T> void setNBT(ItemStack item, String key, T value) {
+        NBTItem nbtItem = new NBTItem(item);
+        if (value instanceof Boolean) {
+            nbtItem.setBoolean(key, (Boolean) value);
+        } else if (value instanceof Integer) {
+            nbtItem.setInteger(key, (Integer) value);
+        } else if (value instanceof Double) {
+            nbtItem.setDouble(key, (Double) value);
+        } else if (value instanceof String) {
+            nbtItem.setString(key, (String) value);
+        }
+    }
+
     public static NBTCompound getCompostoNBT(ItemStack item, String chaveComposto) {
         NBTItem nbtItem = new NBTItem(item);
         return nbtItem.getCompound(chaveComposto);

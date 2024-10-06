@@ -1,8 +1,8 @@
-name: txMines
-main: tx.mines.txMines
+name: txChest
+main: tx.chest.txChest
 version: 1.0
 depend:
   - txAPI
 load: POSTWORLD
 commands:
-  mina:
+  chest:

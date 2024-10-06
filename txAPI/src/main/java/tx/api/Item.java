@@ -5,6 +5,7 @@ import java.util.List;
 
 import net.minecraft.server.v1_7_R4.NBTTagCompound;
 import net.minecraft.server.v1_7_R4.NBTTagList;
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_7_R4.inventory.CraftItemStack;
@@ -52,7 +53,7 @@ public class Item {
 
     public Item setUmbreakable(boolean unbreakable) {
         NBTItem nbtItem = new NBTItem(this.is);
-        nbtItem.setBoolean("Unbreakble", Boolean.valueOf(unbreakable));
+        nbtItem.setBoolean("Unbreakable", Boolean.valueOf(unbreakable));
         this.is = nbtItem.getItem();
         return this;
     }

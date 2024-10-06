@@ -35,6 +35,7 @@ public class ConfirmacaoPrompt extends ValidatingPrompt {
         double regenVida = (double) context.getSessionData("regenVida");
         double regenMana = (double) context.getSessionData("regenMana");
         double sorte = (double) context.getSessionData("sorte");
+        double aoe = (double) context.getSessionData("aoe");
 
         // Formata a mensagem de confirmação com os dados coletados
         String mensagem = Mensagem.formatar("&7Confirme os dados do equipamento:\n" +
@@ -51,6 +52,7 @@ public class ConfirmacaoPrompt extends ValidatingPrompt {
                 "&aRegeneração de Vida: &7" + CalcularStatus.formatarNumero(regenVida) + "\n" +
                 "&bRegeneração de Mana: &7" + CalcularStatus.formatarNumero(regenMana) + "\n" +
                 "&bSorte: &7" + CalcularStatus.formatarNumero(sorte) + "\n" +
+                "&eAOE: &7" + aoe + "\n" +
                 "&7Digite 'sim' para criar o equipamento ou 'não' para cancelar.");
 
         return mensagem;
@@ -67,7 +69,7 @@ public class ConfirmacaoPrompt extends ValidatingPrompt {
             criarEquipamento(context);
 
             context.getForWhom().sendRawMessage(Mensagem.formatar("&aEquipamento criado com sucesso!"));
-        } else {
+        } else if (input.equalsIgnoreCase("nao")){
             context.getForWhom().sendRawMessage(Mensagem.formatar("&cCriação de equipamento cancelada."));
         }
 
@@ -92,6 +94,7 @@ public class ConfirmacaoPrompt extends ValidatingPrompt {
         double regenVida = (double) context.getSessionData("regenVida");
         double regenMana = (double) context.getSessionData("regenMana");
         double sorte = (double) context.getSessionData("sorte");
+        double aoe = (double) context.getSessionData("aoe");
 
         Material material;
         switch (tipoEquipamento) {
@@ -119,6 +122,7 @@ public class ConfirmacaoPrompt extends ValidatingPrompt {
         List<String> lore = new ArrayList<>();
 
         double danoNBT, defesaNBT, intelNBT, ampCombateNBT, alcanceNBT, penDefesaNBT, bloqueioNBT, rouboVidaNBT, regenVidaNBT, regenManaNBT, sorteNBT;
+        int aoeNBT;
 
         try {
             danoNBT = Double.parseDouble(String.valueOf(dano));
@@ -132,6 +136,7 @@ public class ConfirmacaoPrompt extends ValidatingPrompt {
             regenVidaNBT = Double.parseDouble(String.valueOf(regenVida));
             regenManaNBT = Double.parseDouble(String.valueOf(regenMana));
             sorteNBT = Double.parseDouble(String.valueOf(sorte));
+            aoeNBT = (int) Double.parseDouble(String.valueOf(aoe));
 
         } catch (NumberFormatException e){
             Bukkit.getConsoleSender().sendMessage("erro");
@@ -174,6 +179,10 @@ public class ConfirmacaoPrompt extends ValidatingPrompt {
                 lore.add(Mensagem.formatar("&bSorte: &7" + CalcularStatus.formatarNumero(sorte)));
             }
             lore.add(" ");
+            if (aoe > 0){
+                lore.add(Mensagem.formatar("&eAOE: &7") + aoe);
+            }
+            lore.add(" ");
 
         }
 
@@ -192,6 +201,7 @@ public class ConfirmacaoPrompt extends ValidatingPrompt {
                 .setNBT("regenVida", regenVidaNBT)
                 .setNBT("regenMana", regenManaNBT)
                 .setNBT("sorte", sorteNBT)
+                .setNBT("aoe", aoeNBT)
                 .setEnchant(Enchantment.DURABILITY, 1000, true)
                 .setUmbreakable(true)
                 .getIs();

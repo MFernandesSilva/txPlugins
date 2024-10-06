@@ -6,10 +6,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="txRank" />
+        <module name="txChest" />
         <module name="txCustomArmor" />
         <module name="txMines" />
-        <module name="txRank" />
         <module name="txAPI" />
+        <module name="txRaids" />
         <module name="txRPG" />
       </profile>
     </annotationProcessing>

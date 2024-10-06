@@ -20,9 +20,6 @@ public class PlayerJoinAndQuit implements Listener {
         Player player = e.getPlayer();
         txRPG.getInstance().db().carregarDadosJogadorAsync(player);
         txRPG.getInstance().runasDB().carregarDadosJogadorAsync(player);
-        Bukkit.getScheduler().runTaskLater(txRPG.getInstance(), () -> {
-            player.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&7Reequipe sua armadura para ter seus atributos."));
-        }, 40L);
     }
 
     @EventHandler
