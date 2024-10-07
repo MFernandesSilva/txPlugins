@@ -7,8 +7,8 @@ import tx.api.Mensagem;
 
 public class AtributosPrompt extends NumericPrompt {
 
-    private final String atributo;
-    private final String pergunta;
+    private final String atributo; // Atributo atual que está sendo solicitado
+    private final String pergunta;  // Pergunta a ser exibida ao jogador
 
     public AtributosPrompt(String atributo, String pergunta) {
         this.atributo = atributo;
@@ -17,13 +17,18 @@ public class AtributosPrompt extends NumericPrompt {
 
     @Override
     public String getPromptText(ConversationContext context) {
-        return pergunta;
+        return pergunta; // Retorna a pergunta a ser exibida
     }
 
     @Override
     protected Prompt acceptValidatedInput(ConversationContext context, Number input) {
-        context.setSessionData(atributo, input.doubleValue());
+        context.setSessionData(atributo, input.doubleValue()); // Armazena o valor do atributo
 
+        return nextPrompt(atributo); // Chama o próximo prompt com base no atributo atual
+    }
+
+    // Método auxiliar para determinar o próximo prompt com base no atributo atual
+    private Prompt nextPrompt(String atributo) {
         switch (atributo) {
             case "dano":
                 return new AtributosPrompt("defesa", Mensagem.formatar("&7Digite a defesa do equipamento:"));
@@ -48,14 +53,14 @@ public class AtributosPrompt extends NumericPrompt {
             case "sorte":
                 return new AtributosPrompt("aoe", Mensagem.formatar("&7Digite o AOE do equipamento:"));
             case "aoe":
-                return new ConfirmacaoPrompt();
+                return new ConfirmacaoPrompt(); // Último atributo, leva à confirmação
             default:
-                return Prompt.END_OF_CONVERSATION;
+                return Prompt.END_OF_CONVERSATION; // Fim da conversa para entradas inválidas
         }
     }
 
     @Override
     protected String getFailedValidationText(ConversationContext context, String invalidInput) {
-        return Mensagem.formatar("Valor inválido. Por favor, digite um número.");
+        return Mensagem.formatar("Valor inválido. Por favor, digite um número."); // Mensagem para entrada inválida
     }
 }

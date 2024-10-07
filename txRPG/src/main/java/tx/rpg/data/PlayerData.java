@@ -4,23 +4,23 @@ import java.util.UUID;
 
 public class PlayerData implements Cloneable {
 
-    private final UUID uuid;
-    private String nick;
-    private double dano;
-    private double defesa;
-    private int intel;
-    private int ampCombate;
-    private int alcance;
-    private double penDefesa;
-    private int bloqueio;
-    private int rouboVida;
-    private int regenVida;
-    private int regenMana;
-    private int sorte;
-    private double danoFinal;
-    private double defesaFinal;
+    private final UUID uuid; // UUID do jogador
+    private String nick; // Nome do jogador
+    private double dano; // Dano do jogador
+    private double defesa; // Defesa do jogador
+    private int intel; // Inteligência do jogador
+    private int ampCombate; // Aumento de combate
+    private int alcance; // Alcance do jogador
+    private double penDefesa; // Penetração de defesa
+    private int bloqueio; // Taxa de bloqueio
+    private int rouboVida; // Roubo de vida
+    private int regenVida; // Regeneração de vida
+    private int regenMana; // Regeneração de mana
+    private int sorte; // Sorte do jogador
+    private double danoFinal; // Dano final do jogador
+    private double defesaFinal; // Defesa final do jogador
 
-    public PlayerData(UUID uuid, String nick, double dano, double defesa, int intel, int ampCombate, int alcance, double penDefesa, int bloqueio, int rouboVida, int regenVida, int regenMana, int sorte, double danoFinal, double defesaFinal){
+    public PlayerData(UUID uuid, String nick, double dano, double defesa, int intel, int ampCombate, int alcance, double penDefesa, int bloqueio, int rouboVida, int regenVida, int regenMana, int sorte, double danoFinal, double defesaFinal) {
         this.uuid = uuid;
         this.nick = nick;
         this.dano = dano;
@@ -39,7 +39,6 @@ public class PlayerData implements Cloneable {
     }
 
     // Getters
-
     public UUID getUuid() {
         return uuid;
     }
@@ -101,8 +100,6 @@ public class PlayerData implements Cloneable {
     }
 
     // Setters
-
-
     public void setNick(String nick) {
         this.nick = nick;
     }
@@ -160,12 +157,11 @@ public class PlayerData implements Cloneable {
     }
 
     @Override
-    public PlayerData clone(){
+    public PlayerData clone() {
         try {
-            PlayerData cloned = (PlayerData) super.clone();
-            return cloned;
-        } catch (CloneNotSupportedException e){
-            throw new AssertionError(); // Se acontecer, fudeo.
+            return (PlayerData) super.clone(); // Clona o objeto PlayerData
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(); // Se acontecer, não deve ocorrer
         }
     }
 }

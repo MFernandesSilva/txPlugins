@@ -9,19 +9,21 @@ import java.io.File;
 import java.sql.*;
 import java.util.UUID;
 
+// Classe responsável pela gestão do banco de dados
 public class DatabaseManager {
     public static Plugin plugin = txRPG.getInstance();
 
+    // Comandos SQL
     private static final String CRIAR_TABELA = "CREATE TABLE IF NOT EXISTS player_status (" +
             "uuid VARCHAR(36) PRIMARY KEY," +
             "nick VARCHAR(16) NOT NULL," +
             "dano DOUBLE," +
             "defesa DOUBLE," +
-            "intel INTERGER," +
-            "ampCombate INTERGER," +
-            "alcance INTERGER," +
+            "intel INTEGER," +  // Corrigido o tipo INTERGER para INTEGER
+            "ampCombate INTEGER," +
+            "alcance INTEGER," +
             "penDefesa DOUBLE," +
-            "bloqueio INTERGER," +
+            "bloqueio INTEGER," +
             "rouboVida INTEGER," +
             "regenVida INTEGER," +
             "regenMana INTEGER," +
@@ -35,6 +37,7 @@ public class DatabaseManager {
 
     private Connection conexao;
 
+    // Método para conectar ao banco de dados
     public void conectar() throws SQLException {
         try {
             Class.forName("org.sqlite.JDBC");
@@ -51,6 +54,7 @@ public class DatabaseManager {
         }
     }
 
+    // Método para desconectar do banco de dados
     public void desconectar() {
         try {
             if (conexao != null && !conexao.isClosed()) {
@@ -62,12 +66,14 @@ public class DatabaseManager {
         }
     }
 
+    // Método para criar a tabela no banco de dados
     private void criarTabela() throws SQLException {
         try (Statement stmt = conexao.createStatement()) {
             stmt.executeUpdate(CRIAR_TABELA);
         }
     }
 
+    // Método para salvar os dados do jogador
     public void salvarDadosJogador(PlayerData playerData) {
         Bukkit.getScheduler().runTaskAsynchronously(txRPG.getInstance(), () -> {
             try (PreparedStatement pstmt = conexao.prepareStatement(SALVAR_DADOS)) {
@@ -87,7 +93,6 @@ public class DatabaseManager {
                 pstmt.setDouble(14, playerData.getDanoFinal());
                 pstmt.setDouble(15, playerData.getDefesaFinal());
 
-
                 pstmt.executeUpdate();
             } catch (SQLException e) {
                 Bukkit.getLogger().severe("Erro ao salvar dados do jogador: " + e.getMessage());
@@ -95,28 +100,13 @@ public class DatabaseManager {
         });
     }
 
+    // Método assíncrono para carregar os dados do jogador
     public void carregarDadosJogadorAsync(Player player) {
         Bukkit.getScheduler().runTaskAsynchronously(txRPG.getInstance(), () -> {
             PlayerData playerData = carregarDadosJogador(player.getUniqueId());
 
             if (playerData == null) {
-                playerData = new PlayerData(
-                        player.getUniqueId(),
-                        player.getName(),
-                        txRPG.getInstance().getConfiguracao().getDanoPadrao(),
-                        txRPG.getInstance().getConfiguracao().getDefesaPadrao(),
-                        txRPG.getInstance().getConfiguracao().getIntelPadrao(),
-                        txRPG.getInstance().getConfiguracao().getAmpCombatePadrao(),
-                        txRPG.getInstance().getConfiguracao().getAlcancePadrao(),
-                        txRPG.getInstance().getConfiguracao().getPenDefesaPadrao(),
-                        txRPG.getInstance().getConfiguracao().getBloqueioPadrao(),
-                        txRPG.getInstance().getConfiguracao().getRouboVidaPadrao(),
-                        txRPG.getInstance().getConfiguracao().getRegenVidaPadrao(),
-                        txRPG.getInstance().getConfiguracao().getRegenManaPadrao(),
-                        txRPG.getInstance().getConfiguracao().getSortePadrao(),
-                        0, 0
-
-                );
+                playerData = criarPlayerDataDefault(player);
             }
 
             carregarOuCriarRunas(player, playerData);
@@ -124,65 +114,47 @@ public class DatabaseManager {
             final PlayerData finalPlayerData = playerData;
             Bukkit.getScheduler().runTask(txRPG.getInstance(), () -> {
                 txRPG.getInstance().getPlayerData().put(player.getUniqueId(), finalPlayerData);
-
-                if (player.getName().equalsIgnoreCase("Teux")) {
-                    //aplicarAtributosERunas(finalPlayerData);
-                }
             });
         });
     }
 
+    // Método para criar um objeto PlayerData com valores padrão
+    private PlayerData criarPlayerDataDefault(Player player) {
+        return new PlayerData(
+                player.getUniqueId(),
+                player.getName(),
+                txRPG.getInstance().getConfiguracao().getDanoPadrao(),
+                txRPG.getInstance().getConfiguracao().getDefesaPadrao(),
+                txRPG.getInstance().getConfiguracao().getIntelPadrao(),
+                txRPG.getInstance().getConfiguracao().getAmpCombatePadrao(),
+                txRPG.getInstance().getConfiguracao().getAlcancePadrao(),
+                txRPG.getInstance().getConfiguracao().getPenDefesaPadrao(),
+                txRPG.getInstance().getConfiguracao().getBloqueioPadrao(),
+                txRPG.getInstance().getConfiguracao().getRouboVidaPadrao(),
+                txRPG.getInstance().getConfiguracao().getRegenVidaPadrao(),
+                txRPG.getInstance().getConfiguracao().getRegenManaPadrao(),
+                txRPG.getInstance().getConfiguracao().getSortePadrao(),
+                0, 0
+        );
+    }
+
+    // Método para carregar ou criar runas
     private void carregarOuCriarRunas(Player player, PlayerData playerData) {
         try (PreparedStatement pstmt = conexao.prepareStatement(CARREGAR_DADOS)) {
             pstmt.setString(1, player.getUniqueId().toString());
+            // Aqui você pode adicionar lógica para criar runas se não existirem
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    /*
-    private void aplicarAtributosERunas(PlayerData playerData) {
-        playerData.setDamage(1000000000000000000000D);
-        playerData.setDefense(1000000000000000000000D);
-        playerData.setCombatAmp(1000);
-        playerData.setAtkSpeed(10);
-        playerData.setBlock(100);
-        playerData.setCritChance(100);
-        playerData.setCritDmg(1000000000000000000000D);
-        playerData.setDefensePenetration(100);
-        playerData.setLifeSteal(1000000);
-        playerData.setRegen(1000000);
-        playerData.setRange(10);
-        playerData.setLuck(100);
-
-        CalcularStatus.calcularAtributos(playerData);
-    }
-
-     */
-
+    // Método para carregar os dados do jogador
     private PlayerData carregarDadosJogador(UUID uuid) {
         try (PreparedStatement pstmt = conexao.prepareStatement(CARREGAR_DADOS)) {
             pstmt.setString(1, uuid.toString());
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    String nick = rs.getString("nick");
-                    double dano = rs.getDouble("dano");
-                    double defesa = rs.getDouble("defesa");
-                    int intel = rs.getInt("intel");
-                    int ampCombate = rs.getInt("ampCombate");
-                    int alcance = rs.getInt("alcance");
-                    double penDefesa = rs.getDouble("penDefesa");
-                    int bloqueio = rs.getInt("bloqueio");
-                    int rouboVida = rs.getInt("rouboVida");
-                    int regenVida = rs.getInt("regenVida");
-                    int regenMana = rs.getInt("regenMana");
-                    int sorte = rs.getInt("sorte");
-                    double danoFinal = rs.getDouble("danoFinal");
-                    double defesaFinal = rs.getDouble("defesaFinal");
-
-
-
-                    return new PlayerData(uuid, nick, dano, defesa, intel, ampCombate, alcance, penDefesa, bloqueio, rouboVida, regenVida, regenMana, sorte, danoFinal, defesaFinal);
+                    return extrairPlayerData(rs, uuid);
                 }
             }
         } catch (SQLException e) {
@@ -191,9 +163,28 @@ public class DatabaseManager {
         return null;
     }
 
+    // Método para extrair PlayerData do ResultSet
+    private PlayerData extrairPlayerData(ResultSet rs, UUID uuid) throws SQLException {
+        String nick = rs.getString("nick");
+        double dano = rs.getDouble("dano");
+        double defesa = rs.getDouble("defesa");
+        int intel = rs.getInt("intel");
+        int ampCombate = rs.getInt("ampCombate");
+        int alcance = rs.getInt("alcance");
+        double penDefesa = rs.getDouble("penDefesa");
+        int bloqueio = rs.getInt("bloqueio");
+        int rouboVida = rs.getInt("rouboVida");
+        int regenVida = rs.getInt("regenVida");
+        int regenMana = rs.getInt("regenMana");
+        int sorte = rs.getInt("sorte");
+        double danoFinal = rs.getDouble("danoFinal");
+        double defesaFinal = rs.getDouble("defesaFinal");
+
+        return new PlayerData(uuid, nick, dano, defesa, intel, ampCombate, alcance, penDefesa, bloqueio, rouboVida, regenVida, regenMana, sorte, danoFinal, defesaFinal);
+    }
+
+    // Método assíncrono para salvar dados do jogador
     public void salvarDadosJogadorAsync(PlayerData playerData) {
         Bukkit.getScheduler().runTaskAsynchronously(txRPG.getInstance(), () -> salvarDadosJogador(playerData));
     }
-
-
 }

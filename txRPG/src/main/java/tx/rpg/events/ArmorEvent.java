@@ -19,31 +19,44 @@ public class ArmorEvent implements Listener {
         if (event.getWhoClicked() instanceof Player) {
             Player player = (Player) event.getWhoClicked();
 
-            if (player.getGameMode() == GameMode.SURVIVAL) {
+            // Verifica se o jogador está no modo de sobrevivência e se está usando Shift
+            if (player.getGameMode() == GameMode.SURVIVAL && !event.isShiftClick()) {
                 // Verifica se o jogador está interagindo com um slot de armadura
                 if (event.getSlotType() == InventoryType.SlotType.ARMOR) {
                     ItemStack currentItem = event.getCurrentItem(); // Item no slot de armadura (desequipar)
                     ItemStack cursorItem = event.getCursor();      // Item no cursor (equipar)
 
                     // Permitir desequipar sem checar o slot
-                    if (currentItem != null && currentItem.getItemMeta() != null) {
-                        PlayerArmorEquipEvent unequipEvent = new PlayerArmorEquipEvent(player, currentItem, PlayerArmorEquipEvent.ArmorAction.UNEQUIP);
-                        Bukkit.getServer().getPluginManager().callEvent(unequipEvent);
-                    }
+                    desequiparArmadura(player, currentItem);
 
                     // Verifica se o item no cursor é válido para o slot antes de equipar
-                    if (cursorItem != null && cursorItem.getItemMeta() != null) {
-                        if (!isSlotCorretoParaArmadura(cursorItem, event)) {
-                            player.sendMessage(ChatColor.RED + "Você não pode equipar esse item nesse slot.");
-                            event.setCancelled(true); // Cancela a ação de equipar
-                            return;
-                        }
-
-                        PlayerArmorEquipEvent equipEvent = new PlayerArmorEquipEvent(player, cursorItem, PlayerArmorEquipEvent.ArmorAction.EQUIP);
-                        Bukkit.getServer().getPluginManager().callEvent(equipEvent);
-                    }
+                    equiparArmadura(player, cursorItem, event);
                 }
+            } else if (event.isShiftClick()) {
+                // Cancela o evento se o jogador tentar equipar a armadura com Shift
+                event.setCancelled(true);
+                player.sendMessage(ChatColor.RED + "Você não pode equipar armadura segurando Shift.");
             }
+        }
+    }
+
+    private void desequiparArmadura(Player player, ItemStack currentItem) {
+        if (currentItem != null && currentItem.getItemMeta() != null) {
+            PlayerArmorEquipEvent unequipEvent = new PlayerArmorEquipEvent(player, currentItem, PlayerArmorEquipEvent.ArmorAction.UNEQUIP);
+            Bukkit.getServer().getPluginManager().callEvent(unequipEvent);
+        }
+    }
+
+    private void equiparArmadura(Player player, ItemStack cursorItem, InventoryClickEvent event) {
+        if (cursorItem != null && cursorItem.getItemMeta() != null) {
+            if (!isSlotCorretoParaArmadura(cursorItem, event)) {
+                player.sendMessage(ChatColor.RED + "Você não pode equipar esse item nesse slot.");
+                event.setCancelled(true); // Cancela a ação de equipar
+                return;
+            }
+
+            PlayerArmorEquipEvent equipEvent = new PlayerArmorEquipEvent(player, cursorItem, PlayerArmorEquipEvent.ArmorAction.EQUIP);
+            Bukkit.getServer().getPluginManager().callEvent(equipEvent);
         }
     }
 
@@ -71,4 +84,6 @@ public class ArmorEvent implements Listener {
 
         return false;
     }
+
+    // se o player colocar a armadura com o shift cancele o evento
 }

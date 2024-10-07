@@ -12,6 +12,8 @@ import tx.rpg.txRPG;
 import java.util.Arrays;
 
 public class Runas {
+
+    // Tipos de itens de runa
     private enum TipoItemRuna {
         RUNA,
         ROMPIMENTO
@@ -20,6 +22,7 @@ public class Runas {
     private static final String CONFIG_RUNAS_ITENS = "runas.itens.";
     private static final String LVL = "Lvl";
 
+    // Nomes das runas e rompimentos
     private static final String[] NOMES_RUNAS = {
             "&cRuna de Dano Nível %d",
             "&aRuna de Defesa Nível %d",
@@ -35,6 +38,7 @@ public class Runas {
     private static final String LORE_RUNA = "&7Para usar este item, primeiro você tem que romper.";
     private static final String LORE_ROMPIMENTO = "&7Usado para romper nível de &cRUNA&7.";
 
+    // Método para criar runas e rompimentos
     private static ItemStack criarRuna(TipoItemRuna tipoItem, TipoRuna tipoRuna, int nivel) {
         String configPath = CONFIG_RUNAS_ITENS + tipoItem.toString().toLowerCase() + "." + tipoRuna.toString().toLowerCase() + LVL + nivel;
         int itemId = txRPG.getInstance().getConfig().getInt(configPath);
@@ -58,24 +62,25 @@ public class Runas {
         String nome = String.format(tipoItem == TipoItemRuna.RUNA ? NOMES_RUNAS[tipoRuna.ordinal()] : NOMES_ROMPIMENTOS[tipoRuna.ordinal()], nivel);
         String lore = tipoItem == TipoItemRuna.RUNA ? LORE_RUNA : LORE_ROMPIMENTO;
         String tagNBT = tipoItem.toString().toLowerCase() + tipoRuna.toString() + "Lvl" + nivel;
+
         return new Item(itemStack)
                 .setName(Mensagem.formatar(nome))
-                .setLore(Arrays.asList(Mensagem.formatar(lore), Mensagem.formatar("&cCertifique-se de usar o nivel certo!")))
+                .setLore(Arrays.asList(Mensagem.formatar(lore), Mensagem.formatar("&cCertifique-se de usar o nível certo!")))
                 .setNBT("tipo", tagNBT)
                 .setUmbreakable(true)
                 .getIs();
     }
 
-    // Runas
+    // Arrays para armazenar runas e rompimentos
     public ItemStack[] runasDano = new ItemStack[5];
     public ItemStack[] runasDefesa = new ItemStack[5];
     public ItemStack[] runasAmplificacao = new ItemStack[5];
 
-    // Rompimentos
     public ItemStack[] rompimentoDano = new ItemStack[5];
     public ItemStack[] rompimentoDefesa = new ItemStack[5];
     public ItemStack[] rompimentoAmplificacao = new ItemStack[5];
 
+    // Construtor da classe Runas
     public Runas() {
         for (int i = 0; i < 5; i++) {
             runasDano[i] = criarRuna(TipoItemRuna.RUNA, TipoRuna.DANO, i + 1);

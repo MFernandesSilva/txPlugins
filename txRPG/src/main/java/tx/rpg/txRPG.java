@@ -31,7 +31,8 @@ public class txRPG extends JavaPlugin {
     private final DatabaseManager databaseManager;
     private final RunasDatabaseManager runasDatabaseManager;
 
-    public txRPG(){
+    // Construtor da classe
+    public txRPG() {
         this.databaseManager = new DatabaseManager();
         this.runasDatabaseManager = new RunasDatabaseManager();
     }
@@ -40,10 +41,11 @@ public class txRPG extends JavaPlugin {
     public void onEnable() {
         instance = this;
 
+        // Carregar configuração
         this.config = new Config();
-
         config.loadConfiguration();
 
+        // Conectar ao banco de dados
         try {
             databaseManager.conectar();
             runasDatabaseManager.conectar();
@@ -53,43 +55,39 @@ public class txRPG extends JavaPlugin {
             return;
         }
 
+        // Registrar comandos e eventos
         registerCommands();
         registerEvents();
-
-
         DM.onEnable(this);
 
+        // Agendar tarefas periódicas
         Bukkit.getScheduler().runTaskTimer(this, this::atualizarAtributos, 20L, 20L);
         Bukkit.getScheduler().runTaskTimer(this, this::regen, 100L, 100L);
+        Bukkit.getScheduler().runTaskTimer(this, this::saveHealth, 1L, 1L);
 
-        new BukkitRunnable(){
-            @Override
-            public void run(){
-                for (Player player : getServer().getOnlinePlayers()){
-                    int vidaAtual = DBC.getHealth(player);
-                    vidaJogadores.put(player.getUniqueId(), vidaAtual);
-                }
-            }
-        }.runTaskTimer(this, 0L, 1L);
     }
 
     @Override
     public void onDisable() {
+        saveData();
+        // Desconectar do banco de dados
         databaseManager.desconectar();
         runasDatabaseManager.desconectar();
-
         DM.onDisable(this);
     }
 
-    private void registerCommands(){
+    private void registerCommands() {
+        // Registrar comandos do plugin
         getCommand("atributos").setExecutor(new AtributosCommand());
         getCommand("criarequipamento").setExecutor(new CriarEquipamentosCommand());
         getCommand("runas").setExecutor(new RunasCommand());
         getCommand("rompimento").setExecutor(new RompimentoRunasCommand());
         getCommand("infoatributos").setExecutor(new AtributosInfoCommand());
+        getCommand("resetatributos").setExecutor(new ResetAtributosCommand());
     }
 
-    private void registerEvents(){
+    private void registerEvents() {
+        // Registrar eventos do plugin
         getServer().getPluginManager().registerEvents(new PlayerJoinAndQuit(), this);
         getServer().getPluginManager().registerEvents(new RangeEvent(), this);
         getServer().getPluginManager().registerEvents(new ItemHeld(), this);
@@ -102,28 +100,36 @@ public class txRPG extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new LightningEvent(), this);
     }
 
-    public static txRPG getInstance() { return instance; }
+    // Método para obter a instância do plugin
+    public static txRPG getInstance() {
+        return instance;
+    }
 
+    // Método para obter a configuração
     public Config getConfiguracao() {
         return config;
     }
 
+    // Métodos para acessar os gerenciadores de banco de dados
     public DatabaseManager db() {
         return databaseManager;
     }
-    public RunasDatabaseManager runasDB(){
+
+    public RunasDatabaseManager runasDB() {
         return runasDatabaseManager;
     }
 
+    // Métodos para acessar os dados dos jogadores
     public Map<UUID, PlayerData> getPlayerData() {
         return playerData;
     }
 
-    public Map<UUID, RunasPlayerData> getRunasPlayerData(){
+    public Map<UUID, RunasPlayerData> getRunasPlayerData() {
         return runasPlayerData;
     }
 
     private void atualizarAtributos() {
+        // Atualizar atributos dos jogadores
         for (Player player : Bukkit.getOnlinePlayers()) {
             PlayerData playerData = getPlayerData().get(player.getUniqueId());
             RunasPlayerData runasPlayerData = getRunasPlayerData().get(player.getUniqueId());
@@ -133,10 +139,11 @@ public class txRPG extends JavaPlugin {
         }
     }
 
-    private void regen(){
-        for (Player player : Bukkit.getOnlinePlayers()){
+    private void regen() {
+        // Regenerar vida dos jogadores
+        for (Player player : Bukkit.getOnlinePlayers()) {
             PlayerData playerData = getPlayerData().get(player.getUniqueId());
-            if (playerData != null){
+            if (playerData != null) {
                 if (getVidaArmazenada(player) < DBC.getMaxHealth(player)) {
                     int vida = getVidaArmazenada(player) + playerData.getRegenVida();
                     DBC.setHealthCapped(player, vida);
@@ -146,6 +153,22 @@ public class txRPG extends JavaPlugin {
     }
 
     public int getVidaArmazenada(Player player) {
+        // Obter vida armazenada do jogador
         return vidaJogadores.getOrDefault(player.getUniqueId(), 0);
     }
+
+    private void saveData(){
+        for (Player player : Bukkit.getOnlinePlayers()){
+            PlayerData playerData = getPlayerData().get(player.getUniqueId());
+            db().salvarDadosJogador(playerData);
+        }
+    }
+
+    private void saveHealth(){
+        for (Player player : getServer().getOnlinePlayers()) {
+            int vidaAtual = DBC.getHealth(player);
+            vidaJogadores.put(player.getUniqueId(), vidaAtual);
+        }
+    }
+
 }

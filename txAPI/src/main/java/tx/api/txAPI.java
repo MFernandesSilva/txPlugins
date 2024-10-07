@@ -11,11 +11,11 @@ public class txAPI extends JavaPlugin {
 
         loadConfiguration();
 
-        String licenca = getConfig().getString("lincenca");
-        getLogger().info("Licença carregada: " + licenca);
+        String ip = getServer().getIp();
+        getLogger().info("Licença carregada: " + ip);
         getLogger().info("Validando licença...");
 
-        if (!LicencaValidator.validarLicenca(licenca)) {
+        if (!LicencaValidator.validarLicenca(ip)) {
             getLogger().warning("Licença inválida! O plugin será desativado.");
             getServer().getPluginManager().disablePlugin(this);
             return;

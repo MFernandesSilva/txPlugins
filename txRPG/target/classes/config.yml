@@ -1,3 +1,4 @@
+# Configurações iniciais dos atributos dos jogadores
 atributos_iniciais:
   dano: 1000.0
   defesa: 1000.0
@@ -11,6 +12,7 @@ atributos_iniciais:
   regenMana: 0
   sorte: 0
 
+# Mensagens do sistema
 mensagens:
   atributos: " &7Seus atributos foram atualizados!"
   erro_atributos: " &cErro ao atualizar seus atributos."
@@ -20,15 +22,18 @@ mensagens:
   erro_atributos_alterados: " &cErro ao alterar os atributos do jogador."
   uso_txatributos: " &cUso: /txatributos <add/remove/set> <atributo> <quantidade> <jogador>"
 
+# IDs para a interface gráfica
 id_gui:
   dano: 4313
   defesa: 4352
   runa: 403
 
+# Prefixo das mensagens
 prefix: "&7[&ctxRPG&7] "
 
+# Configurações das runas
 runas:
-  # ID dos itens
+  # ID dos itens de runas
   itens:
     runa:
       danoLvl1: 4587
@@ -63,7 +68,8 @@ runas:
       amplificacaoLvl3: 4300
       amplificacaoLvl4: 4300
       amplificacaoLvl5: 4300
-  # Quanto cada runa da de atributo
+
+  # Atributos fornecidos por cada runa
   dano:
     lvl1:
       sublvl1: 1000
@@ -123,6 +129,7 @@ runas:
       sublvl1: 100000
       sublvl2: 110000
       sublvl3: 120000
+
   defesa:
     lvl1:
       sublvl1: 1000
@@ -182,6 +189,7 @@ runas:
       sublvl1: 100000
       sublvl2: 110000
       sublvl3: 120000
+
   amplificacao:
     lvl1:
       sublvl1: 1
@@ -234,10 +242,31 @@ runas:
     lvl4:
       sublvl1: 250
       sublvl2: 280
-      sublvl3: 310
-      sublvl4: 340
-      sublvl5: 370
+      sublvl3: 300
+      sublvl4: 320
+      sublvl5: 350
     lvl5:
-      sublvl1: 450
-      sublvl2: 500
-      sublvl3: 550
+      sublvl1: 500
+      sublvl2: 600
+      sublvl3: 700
+
+# Atributos de runas com base em IDs
+atributos_runa:
+  - id: 4313
+    runa: "Dano"
+    bonus:
+      dano: 100
+      defesa: 0
+      amplificacao: 0
+  - id: 4352
+    runa: "Defesa"
+    bonus:
+      dano: 0
+      defesa: 150
+      amplificacao: 0
+  - id: 403
+    runa: "Amplificação"
+    bonus:
+      dano: 0
+      defesa: 0
+      amplificacao: 20

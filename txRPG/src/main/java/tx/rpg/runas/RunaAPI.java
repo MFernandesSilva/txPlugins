@@ -1,43 +1,52 @@
 package tx.rpg.runas;
 
 import org.bukkit.entity.Player;
-import tx.rpg.data.PlayerData;
 import tx.rpg.data.RunasPlayerData;
 import tx.rpg.txRPG;
 
 public class RunaAPI {
 
-    public static  void adicionarRuna(Player player, TipoRuna tipoRuna, int nivel, int subnivel){
+    // Método para adicionar uma runa ao jogador
+    public static void adicionarRuna(Player player, TipoRuna tipoRuna, int nivel, int subnivel) {
         RunasPlayerData playerData = txRPG.getInstance().getRunasPlayerData().get(player.getUniqueId());
-        if (playerData != null){
+
+        if (playerData != null) {
             Runa novaRuna = new Runa(tipoRuna, nivel, subnivel);
             playerData.adicionarRuna(novaRuna);
         }
     }
 
-    public static void removerRuna(Player player, TipoRuna tipoRuna){
+    // Método para remover uma runa do jogador
+    public static void removerRuna(Player player, TipoRuna tipoRuna) {
         RunasPlayerData playerData = txRPG.getInstance().getRunasPlayerData().get(player.getUniqueId());
-        if (playerData != null){
+
+        if (playerData != null) {
             playerData.getRunas().remove(tipoRuna);
         }
     }
 
-    public static void atualizarRuna(Player player, TipoRuna tipoRuna, int novoNivel, int novoSubNivel){
+    // Método para atualizar os níveis de uma runa do jogador
+    public static void atualizarRuna(Player player, TipoRuna tipoRuna, int novoNivel, int novoSubNivel) {
         RunasPlayerData playerData = txRPG.getInstance().getRunasPlayerData().get(player.getUniqueId());
-        if (playerData != null){
+
+        if (playerData != null) {
             Runa runa = playerData.getRunas().get(tipoRuna);
-            if (runa != null){
+
+            if (runa != null) {
                 runa.setNivel(novoNivel);
                 runa.setSubnivel(novoSubNivel);
             }
         }
     }
 
-    public static boolean podeEvoluirRuna(Player player, TipoRuna tipoRuna){
+    // Método para verificar se uma runa pode evoluir
+    public static boolean podeEvoluirRuna(Player player, TipoRuna tipoRuna) {
         RunasPlayerData playerData = txRPG.getInstance().getRunasPlayerData().get(player.getUniqueId());
-        if (playerData != null){
+
+        if (playerData != null) {
             Runa runa = playerData.getRunas().get(tipoRuna);
-            if (runa != null){
+
+            if (runa != null) {
                 int nivelMaximo = getNivelMaximo(runa.getNivel());
                 int subnivelMaximo = getSubnivelMaximo(runa.getNivel());
                 return runa.getNivel() < 5 && runa.getSubnivel() == subnivelMaximo;
@@ -46,7 +55,8 @@ public class RunaAPI {
         return false;
     }
 
-    public static int getNivelMaximo(int nivelAtual){
+    // Método para obter o nível máximo com base no nível atual
+    public static int getNivelMaximo(int nivelAtual) {
         switch (nivelAtual) {
             case 0:
             case 1:
@@ -62,6 +72,7 @@ public class RunaAPI {
         }
     }
 
+    // Método para obter o subnível máximo com base no nível atual
     public static int getSubnivelMaximo(int nivelAtual) {
         switch (nivelAtual) {
             case 0:

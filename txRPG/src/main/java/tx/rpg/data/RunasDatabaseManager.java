@@ -5,7 +5,6 @@ import org.bukkit.entity.Player;
 import tx.rpg.runas.Runa;
 import tx.rpg.runas.TipoRuna;
 import tx.rpg.txRPG;
-import tx.rpg.utils.CalcularStatus;
 
 import java.io.File;
 import java.sql.*;
@@ -14,6 +13,8 @@ import java.util.Map;
 import java.util.UUID;
 
 public class RunasDatabaseManager {
+
+    // Comandos SQL para manipulação do banco de dados
     private static final String CRIAR_TABELA = "CREATE TABLE IF NOT EXISTS player_status (" +
             "uuid VARCHAR(36) PRIMARY KEY," +
             "nick VARCHAR(16) NOT NULL," +
@@ -30,6 +31,7 @@ public class RunasDatabaseManager {
 
     private Connection connection;
 
+    // Método para conectar ao banco de dados
     public void conectar() throws SQLException {
         try {
             Class.forName("org.sqlite.JDBC");
@@ -46,6 +48,7 @@ public class RunasDatabaseManager {
         }
     }
 
+    // Método para desconectar do banco de dados
     public void desconectar() {
         try {
             if (connection != null && !connection.isClosed()) {
@@ -57,12 +60,14 @@ public class RunasDatabaseManager {
         }
     }
 
+    // Método para criar a tabela no banco de dados
     private void criarTabela() throws SQLException {
         try (Statement stmt = connection.createStatement()) {
             stmt.executeUpdate(CRIAR_TABELA);
         }
     }
 
+    // Método para salvar dados do jogador
     public void salvarDadosJogador(RunasPlayerData playerData) {
         Bukkit.getScheduler().runTaskAsynchronously(txRPG.getInstance(), () -> {
             try (PreparedStatement pstmt = connection.prepareStatement(SALVAR_DADOS)) {
@@ -82,21 +87,14 @@ public class RunasDatabaseManager {
         });
     }
 
+    // Método assíncrono para carregar dados do jogador
     public void carregarDadosJogadorAsync(Player player) {
         Bukkit.getScheduler().runTaskAsynchronously(txRPG.getInstance(), () -> {
             RunasPlayerData playerData = carregarDadosJogador(player.getUniqueId());
 
             if (playerData == null) {
-                Map<TipoRuna, Runa> runas = new EnumMap<>(TipoRuna.class);
-                for (TipoRuna tipoRuna : TipoRuna.values()) {
-                    runas.put(tipoRuna, new Runa(tipoRuna, 0, 0));
-                }
-
-                playerData = new RunasPlayerData(
-                        player.getUniqueId(),
-                        player.getName(),
-                        runas
-                );
+                Map<TipoRuna, Runa> runas = criarRunasPadrao();
+                playerData = new RunasPlayerData(player.getUniqueId(), player.getName(), runas);
             }
 
             carregarOuCriarRunas(player, playerData);
@@ -104,17 +102,20 @@ public class RunasDatabaseManager {
             final RunasPlayerData finalPlayerData = playerData;
             Bukkit.getScheduler().runTask(txRPG.getInstance(), () -> {
                 txRPG.getInstance().getRunasPlayerData().put(player.getUniqueId(), finalPlayerData);
-
-                /*
-                if (player.getName().equalsIgnoreCase("Teux")) {
-                    aplicarAtributosERunas(finalPlayerData);
-                }
-
-                 */
             });
         });
     }
 
+    // Método auxiliar para criar runas padrão
+    private Map<TipoRuna, Runa> criarRunasPadrao() {
+        Map<TipoRuna, Runa> runas = new EnumMap<>(TipoRuna.class);
+        for (TipoRuna tipoRuna : TipoRuna.values()) {
+            runas.put(tipoRuna, new Runa(tipoRuna, 0, 0));
+        }
+        return runas;
+    }
+
+    // Método para carregar ou criar runas do jogador
     private void carregarOuCriarRunas(Player player, RunasPlayerData playerData) {
         Map<TipoRuna, Runa> runas = new EnumMap<>(TipoRuna.class);
         try (PreparedStatement pstmt = connection.prepareStatement(CARREGAR_DADOS)) {
@@ -140,28 +141,19 @@ public class RunasDatabaseManager {
         }
     }
 
-    private void aplicarAtributosERunas(RunasPlayerData playerData) {
-        Map<TipoRuna, Runa> runas = new EnumMap<>(TipoRuna.class);
-        for (TipoRuna tipo : TipoRuna.values()) {
-            runas.put(tipo, new Runa(tipo, 5, 3));
-        }
-        playerData.setRunas(runas);
-    }
-
+    // Método para carregar dados do jogador
     private RunasPlayerData carregarDadosJogador(UUID uuid) {
         try (PreparedStatement pstmt = connection.prepareStatement(CARREGAR_DADOS)) {
             pstmt.setString(1, uuid.toString());
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     String nick = rs.getString("nick");
-
                     Map<TipoRuna, Runa> runas = new EnumMap<>(TipoRuna.class);
                     for (TipoRuna tipo : TipoRuna.values()) {
                         int nivel = rs.getInt("runa_" + tipo.toString().toLowerCase() + "_nivel");
                         int subnivel = rs.getInt("runa_" + tipo.toString().toLowerCase() + "_subnivel");
                         runas.put(tipo, new Runa(tipo, nivel, subnivel));
                     }
-
                     return new RunasPlayerData(uuid, nick, runas);
                 }
             }
@@ -171,6 +163,7 @@ public class RunasDatabaseManager {
         return null;
     }
 
+    // Método assíncrono para salvar dados do jogador
     public void salvarDadosJogadorAsync(RunasPlayerData playerData) {
         Bukkit.getScheduler().runTaskAsynchronously(txRPG.getInstance(), () -> salvarDadosJogador(playerData));
     }

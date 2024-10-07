@@ -19,6 +19,7 @@ import java.util.UUID;
 
 public class ArmorEquipEvent implements Listener {
 
+    // Mapa para armazenar os atributos originais dos jogadores
     private final Map<UUID, PlayerData> originalAttributes = new HashMap<>();
 
     @EventHandler
@@ -27,7 +28,9 @@ public class ArmorEquipEvent implements Listener {
         UUID playerUUID = player.getUniqueId();
         PlayerData playerData = txRPG.getInstance().getPlayerData().get(playerUUID);
         RunasPlayerData runasPlayerData = txRPG.getInstance().getRunasPlayerData().get(playerUUID);
-        if (playerData == null) return;
+
+        if (playerData == null) return; // Retorna se os dados do jogador não estiverem disponíveis
+
         if (isEquipamentoPersonalizado(event.getArmor())) {
             if (event.getAction() == PlayerArmorEquipEvent.ArmorAction.EQUIP) {
                 handleEquipamentChange(player, playerUUID, playerData, event.getArmor());
@@ -39,20 +42,29 @@ public class ArmorEquipEvent implements Listener {
         }
     }
 
+    // Verifica se o item é um equipamento personalizado
     private boolean isEquipamentoPersonalizado(ItemStack item) {
-        return NBT.hasNBTKey(item, "dano") && NBT.hasNBTKey(item, "defesa") && NBT.hasNBTKey(item, "intel")
-                && NBT.hasNBTKey(item, "ampCombate") && NBT.hasNBTKey(item, "alcance") && NBT.hasNBTKey(item, "penDefesa")
-                && NBT.hasNBTKey(item, "bloqueio") && NBT.hasNBTKey(item, "rouboVida")
-                && NBT.hasNBTKey(item, "regenVida") && NBT.hasNBTKey(item, "regenMana") && NBT.hasNBTKey(item, "sorte");
+        return NBT.hasNBTKey(item, "dano") &&
+                NBT.hasNBTKey(item, "defesa") &&
+                NBT.hasNBTKey(item, "intel") &&
+                NBT.hasNBTKey(item, "ampCombate") &&
+                NBT.hasNBTKey(item, "alcance") &&
+                NBT.hasNBTKey(item, "penDefesa") &&
+                NBT.hasNBTKey(item, "bloqueio") &&
+                NBT.hasNBTKey(item, "rouboVida") &&
+                NBT.hasNBTKey(item, "regenVida") &&
+                NBT.hasNBTKey(item, "regenMana") &&
+                NBT.hasNBTKey(item, "sorte");
     }
 
+    // Aplica os atributos do item ao jogador
     private void aplicarAtributosItem(PlayerData playerData, double dano, double defesa, int intel,
                                       int ampCombate, int alcance, double penDefesa, int bloqueio,
                                       int rouboVida, int regenVida, int regenMana, int sorte) {
         playerData.setDano(playerData.getDano() + dano);
         playerData.setDefesa(playerData.getDefesa() + defesa);
         playerData.setIntel(playerData.getIntel() + intel);
-        playerData.setAmpCombate((playerData.getAmpCombate() + ampCombate));
+        playerData.setAmpCombate(playerData.getAmpCombate() + ampCombate);
         playerData.setAlcance(playerData.getAlcance() + alcance);
         playerData.setPenDefesa(playerData.getPenDefesa() + penDefesa);
         playerData.setBloqueio(playerData.getBloqueio() + bloqueio);
@@ -62,6 +74,7 @@ public class ArmorEquipEvent implements Listener {
         playerData.setSorte(playerData.getSorte() + sorte);
     }
 
+    // Remove os atributos do item do jogador
     private void removerAtributosItem(PlayerData playerData, double dano, double defesa, int intel,
                                       int ampCombate, int alcance, double penDefesa, int bloqueio,
                                       int rouboVida, int regenVida, int regenMana, int sorte) {
@@ -78,6 +91,7 @@ public class ArmorEquipEvent implements Listener {
         playerData.setSorte(playerData.getSorte() - sorte);
     }
 
+    // Lida com a mudança ao equipar um novo item
     private void handleEquipamentChange(Player player, UUID playerUUID, PlayerData playerData, ItemStack newItem) {
         try {
             double dano = NBT.getNBT(newItem, "dano", Double.class);
@@ -103,6 +117,7 @@ public class ArmorEquipEvent implements Listener {
         }
     }
 
+    // Lida com a mudança ao desequipar um item
     private void handleUnequipamentChange(Player player, UUID playerUUID, PlayerData playerData, ItemStack oldItem) {
         try {
             double dano = NBT.getNBT(oldItem, "dano", Double.class);
@@ -124,6 +139,7 @@ public class ArmorEquipEvent implements Listener {
         }
     }
 
+    // Restaura os atributos originais do jogador
     private void restaurarAtributosOriginais(UUID playerUUID, PlayerData playerData, RunasPlayerData runasPlayerData) {
         PlayerData originalData = originalAttributes.remove(playerUUID);
 

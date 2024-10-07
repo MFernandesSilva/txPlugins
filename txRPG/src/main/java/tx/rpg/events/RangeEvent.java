@@ -7,16 +7,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.v1_7_R4.entity.CraftArrow;
 import org.bukkit.craftbukkit.v1_7_R4.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.v1_7_R4.entity.CraftPlayer;
-import org.bukkit.entity.Arrow;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.scheduler.BukkitRunnable;
+import tx.api.DBC;
 import tx.rpg.data.PlayerData;
 import tx.rpg.txRPG;
 
@@ -24,12 +22,15 @@ public class RangeEvent implements Listener {
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
+        // Verifica se o jogador clicou no ar ou em um bloco
         if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
             Player player = event.getPlayer();
             PlayerData playerData = txRPG.getInstance().getPlayerData().get(player.getUniqueId());
 
             LivingEntity target = null;
             double closestDistance = Double.MAX_VALUE;
+
+            // Encontra a entidade viva mais próxima do jogador dentro do alcance
             for (Entity entity : player.getNearbyEntities(playerData.getAlcance(), playerData.getAlcance(), playerData.getAlcance())) {
                 if (entity instanceof LivingEntity && !entity.equals(player)) {
                     double distance = player.getLocation().distance(entity.getLocation());
@@ -40,20 +41,20 @@ public class RangeEvent implements Listener {
                 }
             }
 
-            if (target != null) {
+            if (target != null && !(target instanceof Player)) {
                 Arrow arrow = player.launchProjectile(Arrow.class);
-
                 ((CraftArrow) arrow).getHandle().setInvisible(true);
 
+                // Remove a seta para todos os jogadores online
                 for (Player p : Bukkit.getServer().getOnlinePlayers()) {
                     PacketPlayOutEntityDestroy packet = new PacketPlayOutEntityDestroy(arrow.getEntityId());
                     ((CraftPlayer) p).getHandle().playerConnection.sendPacket(packet);
                 }
 
-
                 ((CraftArrow) arrow).getHandle().fromPlayer = 2;
                 arrow.setVelocity(player.getLocation().getDirection().multiply(2));
 
+                // Tarefa para verificar colisões da seta
                 new BukkitRunnable() {
                     int ticks = 0;
 
@@ -82,14 +83,15 @@ public class RangeEvent implements Listener {
                                                     Math.pow(nmsPlayer.locZ - nmsTarget.locZ, 2)
                                     );
 
-                                    if (hitEntity instanceof Player){
+                                    // Calcula dano se a entidade atingida for um jogador
+                                    if (hitEntity instanceof Player) {
                                         PlayerData victimData = txRPG.getInstance().getPlayerData().get(hitEntity.getUniqueId());
-                                        if (horizontalDistance <= playerData.getAlcance() + 0.5){
-                                            hitEntity.damage(calcularDano(playerData) - victimData.getDefesaFinal(), player);
+                                        if (horizontalDistance <= playerData.getAlcance() + 0.5) {
+
                                         }
                                     } else {
+                                        // Calcula dano se a entidade atingida não for um jogador
                                         if (horizontalDistance <= playerData.getAlcance() + 0.5) {
-                                            hitEntity.damage(calcularDano(playerData), player);
                                         }
                                     }
 
@@ -105,15 +107,33 @@ public class RangeEvent implements Listener {
         }
     }
 
-    private double calcularDano(PlayerData playerData) {
-        double danofinal = playerData.getDanoFinal();
-        return danofinal;
-    }
-
     @EventHandler
     public void onProjectileHit(ProjectileHitEvent event) {
+        // Remove a seta ao atingir um alvo
         if (event.getEntity() instanceof Arrow) {
             event.getEntity().remove();
+        }
+    }
+
+    private void applyLifeSteal(Player attacker, Entity victim, PlayerData attackerData) {
+        if (attackerData.getRouboVida() > 0) {
+            if (victim instanceof Player) {
+
+                int rouboVida = attackerData.getRouboVida();
+                int novaVidaAttacker = txRPG.getInstance().getVidaArmazenada(attacker) + rouboVida;
+                int novaVidaVictim = txRPG.getInstance().getVidaArmazenada((Player) victim) - rouboVida;
+
+                novaVidaVictim = Math.max(0, novaVidaVictim);
+                novaVidaAttacker = Math.max(0, novaVidaAttacker);
+                DBC.setHealthCapped(attacker, novaVidaAttacker);
+                DBC.setHealthCapped((Player) victim, novaVidaVictim);
+            } else {
+                int rouboVida = attackerData.getRouboVida();
+                int novaVidaAttacker = txRPG.getInstance().getVidaArmazenada(attacker) + rouboVida;
+                novaVidaAttacker = Math.max(0, novaVidaAttacker);
+                ((Damageable)victim).damage(rouboVida);
+                DBC.setHealthCapped(attacker, novaVidaAttacker);
+            }
         }
     }
 }

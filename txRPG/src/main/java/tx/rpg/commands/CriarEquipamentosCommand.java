@@ -25,28 +25,44 @@ public class CriarEquipamentosCommand implements CommandExecutor {
         DM dm = new DM();
 
         if (!(s instanceof Player)) {
-            s.sendMessage(dm.cc());
+            s.sendMessage(dm.cc()); // Mensagem de erro para não jogadores
             return true;
         }
 
         Player player = (Player) s;
 
         if (!player.hasPermission("txrpg.admin")) {
-            player.sendMessage(dm.np());
+            player.sendMessage(dm.np()); // Mensagem de erro para falta de permissão
             return true;
         }
 
         // Registra o listener ANTES de iniciar a conversa
+        registerChatListener();
+
+        // Cria a fábrica de conversas
+        ConversationFactory cf = createConversationFactory();
+
+        // Inicia a conversa com o jogador
+        cf.buildConversation(player).begin();
+
+        return true;
+    }
+
+    // Método auxiliar para registrar o listener do chat
+    private void registerChatListener() {
         Bukkit.getPluginManager().registerEvents(new Listener() {
             @EventHandler
             public void onPlayerChat(AsyncPlayerChatEvent event) {
                 Player player = event.getPlayer();
                 if (player.isConversing()) {
-                    event.setCancelled(true);
+                    event.setCancelled(true); // Cancela o chat se o jogador estiver em conversa
                 }
             }
         }, txRPG.getInstance());
+    }
 
+    // Método auxiliar para criar a fábrica de conversas
+    private ConversationFactory createConversationFactory() {
         ConversationFactory cf = new ConversationFactory(txRPG.getInstance())
                 .withPrefix(new CustomPrefix())
                 .withFirstPrompt(new TipoEquipamentoPrompt())
@@ -58,13 +74,11 @@ public class CriarEquipamentosCommand implements CommandExecutor {
             public void conversationAbandoned(ConversationAbandonedEvent event) {
                 if (!event.gracefulExit()) {
                     Player player = (Player) event.getContext().getForWhom();
-                    player.sendMessage(Mensagem.formatar("&cVocê saiu da conversa."));
+                    player.sendMessage(Mensagem.formatar("&cVocê saiu da conversa.")); // Mensagem ao sair da conversa
                 }
             }
         });
 
-        cf.buildConversation(player).begin();
-
-        return true;
+        return cf;
     }
 }
