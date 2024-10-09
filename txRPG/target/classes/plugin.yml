@@ -9,6 +9,8 @@ commands:
       - status
   criarequipamento:
   runas:
-  rompimento:
+  reinos:
+  rompimentorunas:
+  rompimentoreinos:
   infoatributos:
   resetatributos:

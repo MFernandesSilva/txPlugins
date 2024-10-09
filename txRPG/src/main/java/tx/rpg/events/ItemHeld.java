@@ -9,6 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import tx.api.Mensagem;
 import tx.api.NBT;
 import tx.rpg.data.PlayerData;
+import tx.rpg.data.ReinosPlayerData;
 import tx.rpg.data.RunasPlayerData;
 import tx.rpg.txRPG;
 import tx.rpg.utils.CalcularStatus;
@@ -32,6 +33,7 @@ public class ItemHeld implements Listener {
 
         PlayerData playerData = txRPG.getInstance().getPlayerData().get(playerUUID);
         RunasPlayerData runasPlayerData = txRPG.getInstance().getRunasPlayerData().get(playerUUID);
+        ReinosPlayerData reinosPlayerData = txRPG.getInstance().getReinosPlayerData().get(playerUUID);
 
         // Verifica se os dados do jogador estão disponíveis
         if (playerData == null) return;
@@ -42,7 +44,7 @@ public class ItemHeld implements Listener {
         }
         // Restaura os atributos originais se o item anterior não era um equipamento personalizado
         else if (originalAttributes.containsKey(playerUUID)) {
-            restaurarAtributosOriginais(playerUUID, playerData, runasPlayerData);
+            restaurarAtributosOriginais(playerUUID, playerData, runasPlayerData, reinosPlayerData);
         }
     }
 
@@ -74,7 +76,7 @@ public class ItemHeld implements Listener {
     }
 
     // Restaura os atributos originais do jogador
-    private void restaurarAtributosOriginais(UUID playerUUID, PlayerData playerData, RunasPlayerData runasPlayerData) {
+    private void restaurarAtributosOriginais(UUID playerUUID, PlayerData playerData, RunasPlayerData runasPlayerData, ReinosPlayerData reinosPlayerData) {
         PlayerData originalData = originalAttributes.remove(playerUUID);
 
         playerData.setDano(originalData.getDano());
@@ -89,7 +91,7 @@ public class ItemHeld implements Listener {
         playerData.setRegenMana(originalData.getRegenMana());
         playerData.setSorte(originalData.getSorte());
 
-        CalcularStatus.calcularAtributos(playerData, runasPlayerData);
+        CalcularStatus.calcularAtributos(playerData, runasPlayerData, reinosPlayerData);
     }
 
     // Trata a mudança de equipamento

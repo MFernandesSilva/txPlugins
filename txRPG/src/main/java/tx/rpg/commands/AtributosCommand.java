@@ -13,11 +13,14 @@ import tx.api.Inventario;
 import tx.api.Item;
 import tx.api.Mensagem;
 import tx.rpg.data.PlayerData;
+import tx.rpg.data.ReinosPlayerData;
 import tx.rpg.data.RunasPlayerData;
+import tx.rpg.reinos.Reino;
+import tx.rpg.reinos.TipoReino;
 import tx.rpg.runas.Runa;
+import tx.rpg.runas.RunaAPI;
 import tx.rpg.runas.TipoRuna;
 import tx.rpg.txRPG;
-import tx.rpg.utils.CalcularStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,34 +67,40 @@ public class AtributosCommand implements CommandExecutor {
 
     private void abrirMenuAtributos(Player player) {
         PlayerData playerData = txRPG.getInstance().getPlayerData().get(player.getUniqueId());
+        ReinosPlayerData reinosPlayerData = txRPG.getInstance().getReinosPlayerData().get(player.getUniqueId());
         RunasPlayerData runasPlayerData = txRPG.getInstance().getRunasPlayerData().get(player.getUniqueId());
 
         Runa runaDANO = runasPlayerData.getRunas().get(DANO);
         Runa runaDEFESA = runasPlayerData.getRunas().get(DEFESA);
         Runa runaAmpCombate = runasPlayerData.getRunas().get(AMPLIFICACAO);
 
+        Reino reino = reinosPlayerData.getReinos().get(TipoReino.REINO);
+
         Inventory menu = Inventario.criarInventario(54, "&7Atributos");
-        List<String> loreAtaque = criarLoreAtaque(playerData, runaDANO);
-        List<String> loreDefesa = criarLoreDefesa(playerData, runaDEFESA);
-        List<String> loreGeral = criarLoreGeral(playerData, runaAmpCombate);
+        List<String> loreAtaque = criarLoreAtaque(playerData, runaDANO, reino);
+        List<String> loreDefesa = criarLoreDefesa(playerData, runaDEFESA, reino);
+        List<String> loreGeral = criarLoreGeral(playerData, runaAmpCombate, reino);
 
         ItemStack ataque = criarItem(Material.DIAMOND_SWORD, "&c&lATAQUE", loreAtaque);
         ItemStack defesa = criarItem(Material.DIAMOND_CHESTPLATE, "&a&lDEFESA", loreDefesa);
         ItemStack geral = criarItem(Material.BOOK_AND_QUILL, "&b&lGERAL", loreGeral);
         ItemStack runas = criarItemRunas(runasPlayerData);
+        ItemStack reinos = criarItemReinos(reinosPlayerData);
 
         Inventario.adicionarItem(menu, ataque, 37);
         Inventario.adicionarItem(menu, geral, 40);
         Inventario.adicionarItem(menu, defesa, 43);
-        Inventario.adicionarItem(menu, runas, 22);
+        Inventario.adicionarItem(menu, runas, 21);
+        Inventario.adicionarItem(menu, reinos, 23);
+
 
         player.openInventory(menu);
     }
 
-    private List<String> criarLoreAtaque(PlayerData playerData, Runa runaDANO) {
+    private List<String> criarLoreAtaque(PlayerData playerData, Runa runaDANO, Reino reino) {
         List<String> loreAtaque = new ArrayList<>();
         loreAtaque.add(" ");
-        loreAtaque.add(Mensagem.formatar("&c➪ Dano: &7" + formatarNumero(playerData.getDano() + runaDANO.getValorAtributo())));
+        loreAtaque.add(Mensagem.formatar("&c➪ Dano: &7" + formatarNumero(playerData.getDano() + runaDANO.getValorAtributo() + reino.getValorAtributo())));
         loreAtaque.add(Mensagem.formatar("&c➪ Alcance: &7" + playerData.getAlcance()));
         loreAtaque.add(Mensagem.formatar("&c➪ Roubo de Vida: &7" + formatarNumero(playerData.getRouboVida())));
         loreAtaque.add(" ");
@@ -100,10 +109,10 @@ public class AtributosCommand implements CommandExecutor {
         return loreAtaque;
     }
 
-    private List<String> criarLoreDefesa(PlayerData playerData, Runa runaDEFESA) {
+    private List<String> criarLoreDefesa(PlayerData playerData, Runa runaDEFESA, Reino reino) {
         List<String> loreDefesa = new ArrayList<>();
         loreDefesa.add(" ");
-        loreDefesa.add(Mensagem.formatar("&a➪ Defesa: &7" + formatarNumero(playerData.getDefesa() + runaDEFESA.getValorAtributo())));
+        loreDefesa.add(Mensagem.formatar("&a➪ Defesa: &7" + formatarNumero(playerData.getDefesa() + runaDEFESA.getValorAtributo() + reino.getValorAtributo())));
         loreDefesa.add(Mensagem.formatar("&a➪ Bloqueio: &7" + playerData.getBloqueio() + "%"));
         loreDefesa.add(Mensagem.formatar("&a➪ Regeneração de Vida: &7" + formatarNumero(playerData.getRegenVida())));
         loreDefesa.add(" ");
@@ -112,12 +121,16 @@ public class AtributosCommand implements CommandExecutor {
         return loreDefesa;
     }
 
-    private List<String> criarLoreGeral(PlayerData playerData, Runa runaAmpCombate) {
+    private List<String> criarLoreGeral(PlayerData playerData, Runa runaAmpCombate, Reino reino) {
         List<String> loreGeral = new ArrayList<>();
+        double amp = playerData.getAmpCombate();
+        amp += runaAmpCombate.getValorAtributo();
+        double ampReino = reino.getValorAtributo() / 1000;
+        amp += ampReino;
         loreGeral.add(" ");
         loreGeral.add(Mensagem.formatar("&b➪ Inteligência: &7" + playerData.getIntel()));
         loreGeral.add(Mensagem.formatar("&b➪ Regeneração de Mana: &7" + formatarNumero(playerData.getRegenMana())));
-        loreGeral.add(Mensagem.formatar("&b➪ Amplificação de Combate: &7" + formatarNumero(playerData.getAmpCombate() + runaAmpCombate.getValorAtributo()) + "%"));
+        loreGeral.add(Mensagem.formatar("&b➪ Amplificação de Combate: &7" + formatarNumero(amp) + "%"));
         loreGeral.add(Mensagem.formatar("&b➪ Penetração de Defesa: &7" + formatarNumero(playerData.getPenDefesa())));
         loreGeral.add(Mensagem.formatar("&b➪ Sorte: &7" + playerData.getSorte()));
         loreGeral.add(" ");
@@ -144,22 +157,23 @@ public class AtributosCommand implements CommandExecutor {
 
         PlayerData playerData = txRPG.getInstance().getPlayerData().get(target.getUniqueId());
         RunasPlayerData runasPlayerData = txRPG.getInstance().getRunasPlayerData().get(target.getUniqueId());
+        ReinosPlayerData reinosPlayerData = txRPG.getInstance().getReinosPlayerData().get(target.getUniqueId());
 
         if (playerData == null) {
             sender.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + txRPG.getInstance().getConfiguracao().getMensagemErroVerAtributos()));
             return true;
         }
 
-        abrirMenuAtributosDeOutroJogador(sender, target, playerData, runasPlayerData);
+        abrirMenuAtributosDeOutroJogador(sender, target, playerData, runasPlayerData, reinosPlayerData);
         return true;
     }
 
-    private void abrirMenuAtributosDeOutroJogador(CommandSender sender, Player target, PlayerData playerData, RunasPlayerData runasPlayerData) {
+    private void abrirMenuAtributosDeOutroJogador(CommandSender sender, Player target, PlayerData playerData, RunasPlayerData runasPlayerData, ReinosPlayerData reinosPlayerData) {
         Inventory menu = Inventario.criarInventario(54, "&7Atributos");
 
-        List<String> loreAtaque = criarLoreAtaque(playerData, runasPlayerData.getRunas().get(DANO));
-        List<String> loreDefesa = criarLoreDefesa(playerData, runasPlayerData.getRunas().get(DEFESA));
-        List<String> loreGeral = criarLoreGeral(playerData, runasPlayerData.getRunas().get(AMPLIFICACAO));
+        List<String> loreAtaque = criarLoreAtaque(playerData, runasPlayerData.getRunas().get(DANO), reinosPlayerData.getReinos().get(TipoReino.REINO));
+        List<String> loreDefesa = criarLoreDefesa(playerData, runasPlayerData.getRunas().get(DEFESA), reinosPlayerData.getReinos().get(TipoReino.REINO));
+        List<String> loreGeral = criarLoreGeral(playerData, runasPlayerData.getRunas().get(AMPLIFICACAO), reinosPlayerData.getReinos().get(TipoReino.REINO));
         List<String> lorePlayer = criarLorePlayer(target);
 
         ItemStack ataque = criarItem(Material.DIAMOND_SWORD, "&c&lATAQUE", loreAtaque);
@@ -167,12 +181,14 @@ public class AtributosCommand implements CommandExecutor {
         ItemStack geral = criarItem(Material.BOOK_AND_QUILL, "&b&lGERAL", loreGeral);
         ItemStack playerItem = criarItem(Material.NETHER_STAR, "&7&lATRIBUTOS", lorePlayer);
         ItemStack runas = criarItemRunas(runasPlayerData);
+        ItemStack reinos = criarItemReinos(reinosPlayerData);
 
         Inventario.adicionarItem(menu, ataque, 37);
         Inventario.adicionarItem(menu, geral, 40);
         Inventario.adicionarItem(menu, defesa, 43);
         Inventario.adicionarItem(menu, playerItem, 4);
-        Inventario.adicionarItem(menu, runas, 22);
+        Inventario.adicionarItem(menu, runas, 21);
+        Inventario.adicionarItem(menu, reinos, 23);
 
         ((Player) sender).openInventory(menu);
     }
@@ -360,17 +376,159 @@ public class AtributosCommand implements CommandExecutor {
 
     private static ItemStack criarItemRunas(RunasPlayerData playerData) {
         List<String> lore = new ArrayList<>();
+        lore.add(" ");
         for (TipoRuna tipoRuna : TipoRuna.values()) {
             Runa runa = playerData.getRunas().get(tipoRuna);
-            if (runa.getNivel() > 0) {
-                lore.add(Mensagem.formatar("&7" + tipoRuna + ": &f" + runa.getNivel() + "-" + runa.getSubnivel()));
-                lore.add(Mensagem.formatar("&7+" + formatarNumero(runa.getValorAtributo()) + (tipoRuna == TipoRuna.AMPLIFICACAO ? "%" : "")));
-                lore.add("");
+            int nivel = runa.getNivel();
+            if (nivel >= 1){
+                int subnivel = runa.getSubnivel();
+                int limite;
+                String cor;
+                String nivelString = String.valueOf(subnivel);
+                switch (tipoRuna){
+                    case DANO:
+                        cor = "&c";
+                        break;
+                    case DEFESA:
+                        cor = "&a";
+                        break;
+                    case AMPLIFICACAO:
+                        cor = "&b";
+                        break;
+                    default:
+                        cor = "&7";
+                        break;
+                }
+
+                if (subnivel >= 1 && subnivel <= 20) {
+                    limite = RunaAPI.getSubnivelMaximo(nivel);
+                } else if (subnivel >= 21 && subnivel <= 35) {
+                    limite = RunaAPI.getSubnivelMaximo(nivel);
+                    nivelString = String.valueOf(subnivel - 20);
+                } else if (subnivel >= 36 && subnivel <= 45) {
+                    limite = RunaAPI.getSubnivelMaximo(nivel);
+                    nivelString = String.valueOf(subnivel - 35);
+                } else if (subnivel >= 46 && subnivel <= 50) {
+                    limite = RunaAPI.getSubnivelMaximo(nivel);
+                    nivelString = String.valueOf(subnivel - 45);
+                } else if (subnivel >= 51 && subnivel <= 53) {
+                    limite = RunaAPI.getSubnivelMaximo(nivel);
+                    nivelString = String.valueOf(subnivel - 50);
+                } else {
+                    return null;
+                }
+
+                if (runa.getNivel() > 0) {
+                    lore.add(Mensagem.formatar(cor + "RUNA DE " + tipoRuna + " " + nivel + " &7(" + nivelString + "/" + limite + ")"));
+                    lore.add(Mensagem.formatar("&7+" + formatarNumero(runa.getValorAtributo()) + (tipoRuna == TipoRuna.AMPLIFICACAO ? "%" : "")));
+                    lore.add(" ");
+                }
             }
         }
+
+        lore.add(Mensagem.formatar("&c&lPROXIMO NÍVEL"));
+        lore.add(" ");
+        for (TipoRuna tipoRuna : TipoRuna.values()) {
+            Runa runa = playerData.getRunas().get(tipoRuna);
+            int nivel = runa.getNivel();
+            int subnivel = runa.getSubnivel();
+            int limite = RunaAPI.getSubnivelMaximo(nivel);
+            String cor;
+            String nivelString = " ";
+            switch (tipoRuna){
+                case DANO:
+                    cor = "&c";
+                    break;
+                case DEFESA:
+                    cor = "&a";
+                    break;
+                case AMPLIFICACAO:
+                    cor = "&b";
+                    break;
+                default:
+                    cor = "&7";
+                    break;
+            }
+
+            if (runa.getNivel() >= 1 && runa.getNivel() <= 52) {
+                lore.add(Mensagem.formatar(cor + tipoRuna + ": &7+" + formatarNumero(runa.getValorAtributoProx())));
+            } else if (runa.getNivel() == 53) {
+                lore.add(Mensagem.formatar(cor + tipoRuna + ": &c&lNÍVEL MAXIMO"));
+            }
+        }
+        lore.add(" ");
         Material material = Material.getMaterial(4584);
         return new Item(material, 1, (short) 0)
                 .setName(Mensagem.formatar("&5&lRUNAS"))
+                .setLore(lore)
+                .setUmbreakable(true)
+                .getIs();
+    }
+
+    private static ItemStack criarItemReinos(ReinosPlayerData playerData){
+        List<String> lore = new ArrayList<>();
+        Reino reino = playerData.getReinos().get(TipoReino.REINO);
+
+        int nivel = reino.getNivel();
+        if (nivel >= 1){
+            int limite;
+            String nivelString;
+            String nivelString2 = String.valueOf(nivel);
+            String cor;
+
+            if (nivel >= 1 && nivel <= 20) {
+                cor = "&7&l";
+                nivelString = "MORTAL";
+                limite = 20;
+            } else if (nivel >= 21 && nivel <= 35) {
+                cor = "&a&l";
+                nivelString = "DE COMBATE";
+                limite = 15;
+                nivelString2 = String.valueOf(nivel - 20);
+            } else if (nivel >= 36 && nivel <= 45) {
+                cor = "&5&l";
+                nivelString = "CELESTIAL";
+                limite = 10;
+                nivelString2 = String.valueOf(nivel - 35);
+            } else if (nivel >= 46 && nivel <= 50) {
+                cor = "&c&l";
+                nivelString = "IMORTAL";
+                limite = 5;
+                nivelString2 = String.valueOf(nivel - 45);
+            } else if (nivel >= 51 && nivel <= 53) {
+                cor = "&6&l";
+                nivelString = "DEUS";
+                limite = 3;
+                nivelString2 = String.valueOf(nivel - 50);
+            } else {
+                return null;
+            }
+
+            lore.add(" ");
+            lore.add(Mensagem.formatar( cor + "REINO " + nivelString + " &7(" + nivelString2 + "/" + limite + ")"));
+            lore.add(" ");
+            lore.add(Mensagem.formatar("&cDANO: &7+" + formatarNumero(reino.getValorAtributo())));
+            lore.add(Mensagem.formatar("&aDEFESA: &7+" + formatarNumero(reino.getValorAtributo())));
+            lore.add(Mensagem.formatar("&bAMP. DE COMBATE: &7+" + formatarNumero(reino.getValorAtributo() / 1000) + "%"));
+            lore.add(" ");
+            if (nivel <= 52) {
+                lore.add(" ");
+                lore.add(Mensagem.formatar("&c&lPROXIMO NÍVEL"));
+                lore.add(" ");
+                lore.add(Mensagem.formatar("&cDANO: &7+" + formatarNumero(reino.getValorAtributoProx())));
+                lore.add(Mensagem.formatar("&aDEFESA: &7+" + formatarNumero(reino.getValorAtributoProx())));
+                lore.add(Mensagem.formatar("&bAMP DE COMBATE: &7+" + formatarNumero(reino.getValorAtributoProx() / 1000) + "%"));
+                lore.add(" ");
+            } else if (nivel == 53){
+                lore.add(" ");
+                lore.add(Mensagem.formatar("&c&lNÍVEL MAXIMO"));
+                lore.add(" ");
+            }
+        }
+        lore.add(" ");
+        Material material = Material.getMaterial(4543);
+        return new Item(material, 1, (short) 0)
+                .setName(Mensagem.formatar("&9&lREINO"))
                 .setLore(lore)
                 .setUmbreakable(true)
                 .getIs();

@@ -89,21 +89,25 @@ public class RunasDatabaseManager {
 
     // Método assíncrono para carregar dados do jogador
     public void carregarDadosJogadorAsync(Player player) {
-        Bukkit.getScheduler().runTaskAsynchronously(txRPG.getInstance(), () -> {
-            RunasPlayerData playerData = carregarDadosJogador(player.getUniqueId());
+        try {
+            Bukkit.getScheduler().runTaskAsynchronously(txRPG.getInstance(), () -> {
+                RunasPlayerData playerData = carregarDadosJogador(player.getUniqueId());
 
-            if (playerData == null) {
-                Map<TipoRuna, Runa> runas = criarRunasPadrao();
-                playerData = new RunasPlayerData(player.getUniqueId(), player.getName(), runas);
-            }
+                if (playerData == null) {
+                    Map<TipoRuna, Runa> runas = criarRunasPadrao();
+                    playerData = new RunasPlayerData(player.getUniqueId(), player.getName(), runas);
+                }
 
-            carregarOuCriarRunas(player, playerData);
+                carregarOuCriarRunas(player, playerData);
 
-            final RunasPlayerData finalPlayerData = playerData;
-            Bukkit.getScheduler().runTask(txRPG.getInstance(), () -> {
-                txRPG.getInstance().getRunasPlayerData().put(player.getUniqueId(), finalPlayerData);
+                final RunasPlayerData finalPlayerData = playerData;
+                Bukkit.getScheduler().runTask(txRPG.getInstance(), () -> {
+                    txRPG.getInstance().getRunasPlayerData().put(player.getUniqueId(), finalPlayerData);
+                });
             });
-        });
+        } catch (Exception e){
+            Bukkit.getLogger().severe("async: " + e.getMessage());
+        }
     }
 
     // Método auxiliar para criar runas padrão
@@ -148,12 +152,14 @@ public class RunasDatabaseManager {
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     String nick = rs.getString("nick");
+
                     Map<TipoRuna, Runa> runas = new EnumMap<>(TipoRuna.class);
                     for (TipoRuna tipo : TipoRuna.values()) {
                         int nivel = rs.getInt("runa_" + tipo.toString().toLowerCase() + "_nivel");
                         int subnivel = rs.getInt("runa_" + tipo.toString().toLowerCase() + "_subnivel");
                         runas.put(tipo, new Runa(tipo, nivel, subnivel));
                     }
+
                     return new RunasPlayerData(uuid, nick, runas);
                 }
             }
@@ -162,6 +168,7 @@ public class RunasDatabaseManager {
         }
         return null;
     }
+
 
     // Método assíncrono para salvar dados do jogador
     public void salvarDadosJogadorAsync(RunasPlayerData playerData) {

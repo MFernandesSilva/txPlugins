@@ -1,13 +1,15 @@
 package tx.rpg.utils;
 
 import tx.rpg.data.PlayerData;
+import tx.rpg.data.ReinosPlayerData;
 import tx.rpg.data.RunasPlayerData;
+import tx.rpg.reinos.Reino;
 import tx.rpg.runas.Runa;
 
 public class CalcularStatus {
 
     // Método para calcular os atributos do jogador
-    public static void calcularAtributos(PlayerData playerData, RunasPlayerData runasPlayerData) {
+    public static void calcularAtributos(PlayerData playerData, RunasPlayerData runasPlayerData, ReinosPlayerData reinosPlayerData) {
         if (playerData == null) {
             throw new IllegalArgumentException("Dados do jogador não podem ser nulos.");
         }
@@ -36,6 +38,16 @@ public class CalcularStatus {
                     break;
                 case AMPLIFICACAO:
                     ampCombate += runa.getValorAtributo();
+                    break;
+            }
+        }
+
+        for (Reino reino : reinosPlayerData.getReinos().values()){
+            switch (reino.getTipo()){
+                case REINO:
+                    dano += reino.getValorAtributo();
+                    defesa += reino.getValorAtributo();
+                    ampCombate += (reino.getValorAtributo() / 1000);
                     break;
             }
         }

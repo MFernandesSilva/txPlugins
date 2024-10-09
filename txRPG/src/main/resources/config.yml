@@ -249,6 +249,76 @@ runas:
       sublvl1: 500
       sublvl2: 600
       sublvl3: 700
+reinos:
+  itens:
+    reino_mortal: 7
+    reino_deCombate: 7
+    reino_celestial: 7
+    reino_imortal: 7
+    reino_deus: 7
+    rompimento_mortal: 7
+    rompimento_deCombate: 7
+    rompimento_celestial: 7
+    rompimento_imortal: 7
+    rompimento_deus: 7
+  # lvl1 1 ate 20
+  lvl1: 1000
+  lvl2: 1500
+  lvl3: 2000
+  lvl4: 2500
+  lvl5: 3000
+  lvl6: 3500
+  lvl7: 4000
+  lvl8: 4500
+  lvl9: 5000
+  lvl10: 5500
+  lvl11: 6000
+  lvl12: 6500
+  lvl13: 7000
+  lvl14: 7500
+  lvl15: 8000
+  lvl16: 8500
+  lvl17: 9000
+  lvl18: 9500
+  lvl19: 10000
+  lvl20: 10500
+  # lvl2 21 ate 35
+  lvl21: 12000
+  lvl22: 13000
+  lvl23: 14000
+  lvl24: 15000
+  lvl25: 16000
+  lvl26: 17000
+  lvl27: 18000
+  lvl28: 19000
+  lvl29: 20000
+  lvl30: 21000
+  lvl31: 22000
+  lvl32: 23000
+  lvl33: 24000
+  lvl34: 25000
+  lvl35: 26000
+  # lvl3 36 a 45
+  lvl36: 30000
+  lvl37: 33000
+  lvl38: 36000
+  lvl39: 39000
+  lvl40: 42000
+  lvl41: 45000
+  lvl42: 48000
+  lvl43: 51000
+  lvl44: 54000
+  lvl45: 57000
+  #lvl4 46 a 50
+  lvl46: 65000
+  lvl47: 70000
+  lvl48: 75000
+  lvl49: 80000
+  lvl50: 85000
+  #lvl5 51 a 53
+  lvl51: 100000
+  lvl52: 110000
+  lvl53: 120000
 
 # Atributos de runas com base em IDs
 atributos_runa:

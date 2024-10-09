@@ -9,10 +9,7 @@ import tx.api.DM;
 import tx.api.NBT;
 import tx.rpg.commands.*;
 import tx.rpg.config.Config;
-import tx.rpg.data.DatabaseManager;
-import tx.rpg.data.PlayerData;
-import tx.rpg.data.RunasDatabaseManager;
-import tx.rpg.data.RunasPlayerData;
+import tx.rpg.data.*;
 import tx.rpg.events.*;
 import tx.rpg.utils.CalcularStatus;
 
@@ -26,15 +23,18 @@ public class txRPG extends JavaPlugin {
     private static txRPG instance;
     private Map<UUID, PlayerData> playerData = new HashMap<>();
     private Map<UUID, RunasPlayerData> runasPlayerData = new HashMap<>();
+    private Map<UUID, ReinosPlayerData> reinosPlayerData = new HashMap<>();
     private HashMap<UUID, Integer> vidaJogadores = new HashMap<>();
     private Config config;
     private final DatabaseManager databaseManager;
     private final RunasDatabaseManager runasDatabaseManager;
+    private final ReinosDatabaseManager reinosDatabaseManager;
 
     // Construtor da classe
     public txRPG() {
         this.databaseManager = new DatabaseManager();
         this.runasDatabaseManager = new RunasDatabaseManager();
+        this.reinosDatabaseManager = new ReinosDatabaseManager();
     }
 
     @Override
@@ -49,6 +49,7 @@ public class txRPG extends JavaPlugin {
         try {
             databaseManager.conectar();
             runasDatabaseManager.conectar();
+            reinosDatabaseManager.conectar();
         } catch (SQLException e) {
             Bukkit.getLogger().severe("Erro ao conectar ao banco de dados: " + e.getMessage());
             getServer().getPluginManager().disablePlugin(this);
@@ -62,6 +63,7 @@ public class txRPG extends JavaPlugin {
 
         // Agendar tarefas periódicas
         Bukkit.getScheduler().runTaskTimer(this, this::atualizarAtributos, 20L, 20L);
+        Bukkit.getScheduler().runTaskTimer(this, this::atualizarAtributosAtrasado, 20L, 20L);
         Bukkit.getScheduler().runTaskTimer(this, this::regen, 100L, 100L);
         Bukkit.getScheduler().runTaskTimer(this, this::saveHealth, 1L, 1L);
 
@@ -69,10 +71,10 @@ public class txRPG extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        saveData();
         // Desconectar do banco de dados
         databaseManager.desconectar();
         runasDatabaseManager.desconectar();
+        reinosDatabaseManager.desconectar();
         DM.onDisable(this);
     }
 
@@ -81,7 +83,9 @@ public class txRPG extends JavaPlugin {
         getCommand("atributos").setExecutor(new AtributosCommand());
         getCommand("criarequipamento").setExecutor(new CriarEquipamentosCommand());
         getCommand("runas").setExecutor(new RunasCommand());
-        getCommand("rompimento").setExecutor(new RompimentoRunasCommand());
+        getCommand("reinos").setExecutor(new ReinosCommand());
+        getCommand("rompimentorunas").setExecutor(new RompimentoRunasCommand());
+        getCommand("rompimentoreinos").setExecutor(new RompimentoReinoCommand());
         getCommand("infoatributos").setExecutor(new AtributosInfoCommand());
         getCommand("resetatributos").setExecutor(new ResetAtributosCommand());
     }
@@ -119,6 +123,10 @@ public class txRPG extends JavaPlugin {
         return runasDatabaseManager;
     }
 
+    public ReinosDatabaseManager reinosDB(){
+        return reinosDatabaseManager;
+    }
+
     // Métodos para acessar os dados dos jogadores
     public Map<UUID, PlayerData> getPlayerData() {
         return playerData;
@@ -128,13 +136,40 @@ public class txRPG extends JavaPlugin {
         return runasPlayerData;
     }
 
+    public Map<UUID, ReinosPlayerData> getReinosPlayerData(){
+        return reinosPlayerData;
+    }
+
     private void atualizarAtributos() {
         // Atualizar atributos dos jogadores
         for (Player player : Bukkit.getOnlinePlayers()) {
             PlayerData playerData = getPlayerData().get(player.getUniqueId());
             RunasPlayerData runasPlayerData = getRunasPlayerData().get(player.getUniqueId());
-            if (playerData != null && runasPlayerData != null) {
-                CalcularStatus.calcularAtributos(playerData, runasPlayerData);
+            ReinosPlayerData reinosPlayerData = getReinosPlayerData().get(player.getUniqueId());
+            CalcularStatus.calcularAtributos(playerData, runasPlayerData, reinosPlayerData);
+        }
+    }
+
+    private void atualizarAtributosAtrasado(){
+        for (Player player : Bukkit.getOnlinePlayers()){
+            UUID playerUUID = player.getUniqueId();
+            PlayerData playerData = getPlayerData().get(player.getUniqueId());
+            RunasPlayerData runasPlayerData = getRunasPlayerData().get(player.getUniqueId());
+            ReinosPlayerData reinosPlayerData = getReinosPlayerData().get(player.getUniqueId());
+
+            if (playerData != null) {
+                db().salvarDadosJogadorAsync(playerData);
+                runasDB().salvarDadosJogadorAsync(runasPlayerData);
+                reinosDB().salvarDadosJogadorAsync(reinosPlayerData);
+                getPlayerData().remove(playerUUID);
+                getRunasPlayerData().remove(playerUUID);
+                getReinosPlayerData().remove(playerUUID);
+                db().carregarDadosJogadorAsync(player);
+                runasDB().carregarDadosJogadorAsync(player);
+                reinosDB().carregarDadosJogadorAsync(player);
+                getPlayerData().put(playerUUID, playerData);
+                getRunasPlayerData().put(playerUUID, runasPlayerData);
+                getReinosPlayerData().put(playerUUID, reinosPlayerData);
             }
         }
     }
@@ -155,13 +190,6 @@ public class txRPG extends JavaPlugin {
     public int getVidaArmazenada(Player player) {
         // Obter vida armazenada do jogador
         return vidaJogadores.getOrDefault(player.getUniqueId(), 0);
-    }
-
-    private void saveData(){
-        for (Player player : Bukkit.getOnlinePlayers()){
-            PlayerData playerData = getPlayerData().get(player.getUniqueId());
-            db().salvarDadosJogador(playerData);
-        }
     }
 
     private void saveHealth(){

@@ -29,7 +29,7 @@ public class RunasCommand implements CommandExecutor {
         Player player = (Player) s;
 
         // Verifica se o jogador tem permissão para usar o comando
-        if (!player.hasPermission("txrpg.runas.op")) {
+        if (!player.hasPermission("txrpg.admin")) {
             player.sendMessage(dm.np());
             return true;
         }

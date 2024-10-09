@@ -9,6 +9,7 @@ import tx.api.Mensagem;
 import tx.api.NBT;
 import tx.rpg.api.PlayerArmorEquipEvent;
 import tx.rpg.data.PlayerData;
+import tx.rpg.data.ReinosPlayerData;
 import tx.rpg.data.RunasPlayerData;
 import tx.rpg.txRPG;
 import tx.rpg.utils.CalcularStatus;
@@ -140,7 +141,7 @@ public class ArmorEquipEvent implements Listener {
     }
 
     // Restaura os atributos originais do jogador
-    private void restaurarAtributosOriginais(UUID playerUUID, PlayerData playerData, RunasPlayerData runasPlayerData) {
+    private void restaurarAtributosOriginais(UUID playerUUID, PlayerData playerData, RunasPlayerData runasPlayerData, ReinosPlayerData reinosPlayerData) {
         PlayerData originalData = originalAttributes.remove(playerUUID);
 
         playerData.setDano(originalData.getDano());
@@ -155,6 +156,6 @@ public class ArmorEquipEvent implements Listener {
         playerData.setRegenMana(originalData.getRegenMana());
         playerData.setSorte(originalData.getSorte());
 
-        CalcularStatus.calcularAtributos(playerData, runasPlayerData);
+        CalcularStatus.calcularAtributos(playerData, runasPlayerData, reinosPlayerData);
     }
 }

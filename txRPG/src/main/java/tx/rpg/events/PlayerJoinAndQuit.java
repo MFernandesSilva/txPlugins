@@ -1,5 +1,6 @@
 package tx.rpg.events;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -7,6 +8,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import tx.api.Mensagem;
 import tx.rpg.data.PlayerData;
+import tx.rpg.data.ReinosPlayerData;
 import tx.rpg.data.RunasPlayerData;
 import tx.rpg.txRPG;
 
@@ -20,6 +22,7 @@ public class PlayerJoinAndQuit implements Listener {
         // Carrega os dados do jogador de forma assíncrona ao entrar
         txRPG.getInstance().db().carregarDadosJogadorAsync(player);
         txRPG.getInstance().runasDB().carregarDadosJogadorAsync(player);
+        txRPG.getInstance().reinosDB().carregarDadosJogadorAsync(player);
     }
 
     @EventHandler
@@ -29,13 +32,16 @@ public class PlayerJoinAndQuit implements Listener {
 
         PlayerData playerData = txRPG.getInstance().getPlayerData().get(playerUUID);
         RunasPlayerData runasPlayerData = txRPG.getInstance().getRunasPlayerData().get(playerUUID);
+        ReinosPlayerData reinosPlayerData = txRPG.getInstance().getReinosPlayerData().get(playerUUID);
 
         if (playerData != null) {
             // Salva os dados do jogador de forma assíncrona ao sair
             txRPG.getInstance().db().salvarDadosJogadorAsync(playerData);
             txRPG.getInstance().runasDB().salvarDadosJogadorAsync(runasPlayerData);
+            txRPG.getInstance().reinosDB().salvarDadosJogadorAsync(reinosPlayerData);
             txRPG.getInstance().getPlayerData().remove(playerUUID);
             txRPG.getInstance().getRunasPlayerData().remove(playerUUID);
+            txRPG.getInstance().getReinosPlayerData().remove(playerUUID);
         }
     }
 }
