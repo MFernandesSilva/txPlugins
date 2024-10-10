@@ -12,12 +12,14 @@ public class ReinosPlayerData implements Cloneable {
     private String nick;
     private Map<TipoReino, Reino> reinos;
 
-    public ReinosPlayerData(UUID uuid, String nick, Map<TipoReino, Reino> reinos){
+    // Construtor para inicializar os dados do jogador
+    public ReinosPlayerData(UUID uuid, String nick, Map<TipoReino, Reino> reinos) {
         this.uuid = uuid;
         this.nick = nick;
         this.reinos = reinos;
     }
 
+    // Métodos de acesso para UUID
     public UUID getUuid() {
         return uuid;
     }
@@ -26,6 +28,7 @@ public class ReinosPlayerData implements Cloneable {
         this.uuid = uuid;
     }
 
+    // Métodos de acesso para nick
     public String getNick() {
         return nick;
     }
@@ -34,6 +37,7 @@ public class ReinosPlayerData implements Cloneable {
         this.nick = nick;
     }
 
+    // Métodos de acesso para reinos
     public Map<TipoReino, Reino> getReinos() {
         return reinos;
     }
@@ -42,15 +46,16 @@ public class ReinosPlayerData implements Cloneable {
         this.reinos = reinos;
     }
 
-    public void adicionarReino(Reino reino){
+    // Método para adicionar um reino
+    public void adicionarReino(Reino reino) {
         this.reinos.put(reino.getTipo(), reino);
     }
 
     @Override
-    public ReinosPlayerData clone(){
+    public ReinosPlayerData clone() {
         try {
             return (ReinosPlayerData) super.clone();
-        } catch (CloneNotSupportedException e){
+        } catch (CloneNotSupportedException e) {
             throw new AssertionError();
         }
     }

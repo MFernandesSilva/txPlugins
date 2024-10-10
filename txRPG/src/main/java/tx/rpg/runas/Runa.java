@@ -1,24 +1,22 @@
-
 package tx.rpg.runas;
 
 import tx.rpg.config.Config;
 import tx.rpg.txRPG;
 
 public class Runa {
-
     // Atributos da classe Runa
-    private final TipoRuna tipo;
-    private int nivel;
-    private int subnivel;
-    private double valorAtributo, valorAtributoProx;
+    private final TipoRuna tipo; // Tipo da runa
+    private int nivel; // Nível da runa
+    private int subnivel; // Subnível da runa
+    private double valorAtributo; // Valor do atributo atual
+    private double valorAtributoProx; // Valor do atributo do próximo nível
 
     // Construtor da classe Runa
     public Runa(TipoRuna tipo, int nivel, int subnivel) {
         this.tipo = tipo;
         this.nivel = nivel;
         this.subnivel = subnivel;
-        this.valorAtributo = calcularValorAtributo(txRPG.getInstance().getConfiguracao());
-        this.valorAtributoProx = calcularValorAtributoProximo(txRPG.getInstance().getConfiguracao());
+        atualizarValoresAtributos();
     }
 
     // Getters
@@ -45,12 +43,19 @@ public class Runa {
     // Setters
     public void setNivel(int nivel) {
         this.nivel = nivel;
-        this.valorAtributo = calcularValorAtributo(txRPG.getInstance().getConfiguracao());
+        atualizarValoresAtributos();
     }
 
     public void setSubnivel(int subnivel) {
         this.subnivel = subnivel;
-        this.valorAtributo = calcularValorAtributo(txRPG.getInstance().getConfiguracao());
+        atualizarValoresAtributos();
+    }
+
+    // Método para atualizar os valores dos atributos
+    private void atualizarValoresAtributos() {
+        Config config = txRPG.getInstance().getConfiguracao();
+        this.valorAtributo = calcularValorAtributo(config);
+        this.valorAtributoProx = calcularValorAtributoProximo(config);
     }
 
     // Método para calcular o valor do atributo
@@ -59,10 +64,13 @@ public class Runa {
         return config.config.getDouble(path, 0.0);
     }
 
-    private double calcularValorAtributoProximo(Config config){
-        int proxNivel = 0, proxSubNivel = 0;
-        if (nivel >= 1 && nivel <= 4){
-            if (subnivel < RunaAPI.getSubnivelMaximo(nivel)){
+    // Método para calcular o valor do atributo do próximo nível
+    private double calcularValorAtributoProximo(Config config) {
+        int proxNivel = 0;
+        int proxSubNivel = 0;
+
+        if (nivel >= 1 && nivel <= 4) {
+            if (subnivel < RunaAPI.getSubnivelMaximo(nivel)) {
                 proxSubNivel = subnivel + 1;
                 proxNivel = nivel;
             } else {
@@ -70,13 +78,13 @@ public class Runa {
                 proxNivel = nivel + 1;
             }
         } else if (nivel == 5) {
-            if (subnivel < RunaAPI.getSubnivelMaximo(nivel)){
+            if (subnivel < RunaAPI.getSubnivelMaximo(nivel)) {
                 proxSubNivel = subnivel + 1;
                 proxNivel = nivel;
             }
         }
 
-        String path =  "runas." + tipo.toString().toLowerCase() + ".lvl" + proxNivel + ".sublvl" + proxSubNivel;
+        String path = "runas." + tipo.toString().toLowerCase() + ".lvl" + proxNivel + ".sublvl" + proxSubNivel;
         return config.config.getDouble(path, 0.0);
     }
 }

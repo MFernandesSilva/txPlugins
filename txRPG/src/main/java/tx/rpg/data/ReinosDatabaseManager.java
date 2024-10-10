@@ -4,8 +4,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import tx.rpg.reinos.Reino;
 import tx.rpg.reinos.TipoReino;
-import tx.rpg.runas.Runa;
-import tx.rpg.runas.TipoRuna;
 import tx.rpg.txRPG;
 
 import java.io.File;
@@ -15,6 +13,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class ReinosDatabaseManager {
+
     private static final String CRIAR_TABELA = "CREATE TABLE IF NOT EXISTS player_status (" +
             "uuid VARCHAR(36) PRIMARY KEY," +
             "nick VARCHAR(16) NOT NULL," +
@@ -26,6 +25,7 @@ public class ReinosDatabaseManager {
 
     private Connection connection;
 
+    // Método para conectar ao banco de dados
     public void conectar() throws SQLException {
         try {
             Class.forName("org.sqlite.JDBC");
@@ -42,6 +42,7 @@ public class ReinosDatabaseManager {
         }
     }
 
+    // Método para desconectar do banco de dados
     public void desconectar() {
         try {
             if (connection != null && !connection.isClosed()) {
@@ -53,12 +54,14 @@ public class ReinosDatabaseManager {
         }
     }
 
+    // Método para criar a tabela no banco de dados
     private void criarTabela() throws SQLException {
         try (Statement stmt = connection.createStatement()) {
             stmt.executeUpdate(CRIAR_TABELA);
         }
     }
 
+    // Método para salvar dados do jogador
     public void salvarDadosJogador(ReinosPlayerData playerData) {
         Bukkit.getScheduler().runTaskAsynchronously(txRPG.getInstance(), () -> {
             try (PreparedStatement pstmt = connection.prepareStatement(SALVAR_DADOS)) {
@@ -76,6 +79,7 @@ public class ReinosDatabaseManager {
         });
     }
 
+    // Método para carregar dados do jogador de forma assíncrona
     public void carregarDadosJogadorAsync(Player player) {
         Bukkit.getScheduler().runTaskAsynchronously(txRPG.getInstance(), () -> {
             ReinosPlayerData playerData = carregarDadosJogador(player.getUniqueId());
@@ -94,6 +98,7 @@ public class ReinosDatabaseManager {
         });
     }
 
+    // Método auxiliar para criar reinos padrão
     private Map<TipoReino, Reino> criarReinosPadrao() {
         Map<TipoReino, Reino> reinos = new EnumMap<>(TipoReino.class);
         for (TipoReino tipoReino : TipoReino.values()) {
@@ -102,6 +107,7 @@ public class ReinosDatabaseManager {
         return reinos;
     }
 
+    // Método para carregar ou criar reinos
     private void carregarOuCriarReinos(Player player, ReinosPlayerData playerData) {
         Map<TipoReino, Reino> reinos = new EnumMap<>(TipoReino.class);
         try (PreparedStatement pstmt = connection.prepareStatement(CARREGAR_DADOS)) {
@@ -126,6 +132,7 @@ public class ReinosDatabaseManager {
         }
     }
 
+    // Método para carregar dados do jogador
     private ReinosPlayerData carregarDadosJogador(UUID uuid) {
         try (PreparedStatement pstmt = connection.prepareStatement(CARREGAR_DADOS)) {
             pstmt.setString(1, uuid.toString());
@@ -146,6 +153,7 @@ public class ReinosDatabaseManager {
         return null;
     }
 
+    // Método para salvar dados do jogador de forma assíncrona
     public void salvarDadosJogadorAsync(ReinosPlayerData playerData) {
         Bukkit.getScheduler().runTaskAsynchronously(txRPG.getInstance(), () -> salvarDadosJogador(playerData));
     }

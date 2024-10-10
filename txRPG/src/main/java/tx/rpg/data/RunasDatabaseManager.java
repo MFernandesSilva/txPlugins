@@ -89,25 +89,21 @@ public class RunasDatabaseManager {
 
     // Método assíncrono para carregar dados do jogador
     public void carregarDadosJogadorAsync(Player player) {
-        try {
-            Bukkit.getScheduler().runTaskAsynchronously(txRPG.getInstance(), () -> {
-                RunasPlayerData playerData = carregarDadosJogador(player.getUniqueId());
+        Bukkit.getScheduler().runTaskAsynchronously(txRPG.getInstance(), () -> {
+            RunasPlayerData playerData = carregarDadosJogador(player.getUniqueId());
 
-                if (playerData == null) {
-                    Map<TipoRuna, Runa> runas = criarRunasPadrao();
-                    playerData = new RunasPlayerData(player.getUniqueId(), player.getName(), runas);
-                }
+            if (playerData == null) {
+                Map<TipoRuna, Runa> runas = criarRunasPadrao();
+                playerData = new RunasPlayerData(player.getUniqueId(), player.getName(), runas);
+            }
 
-                carregarOuCriarRunas(player, playerData);
+            carregarOuCriarRunas(player, playerData);
 
-                final RunasPlayerData finalPlayerData = playerData;
-                Bukkit.getScheduler().runTask(txRPG.getInstance(), () -> {
-                    txRPG.getInstance().getRunasPlayerData().put(player.getUniqueId(), finalPlayerData);
-                });
+            final RunasPlayerData finalPlayerData = playerData;
+            Bukkit.getScheduler().runTask(txRPG.getInstance(), () -> {
+                txRPG.getInstance().getRunasPlayerData().put(player.getUniqueId(), finalPlayerData);
             });
-        } catch (Exception e){
-            Bukkit.getLogger().severe("async: " + e.getMessage());
-        }
+        });
     }
 
     // Método auxiliar para criar runas padrão
@@ -136,6 +132,7 @@ public class RunasDatabaseManager {
                 Bukkit.getLogger().severe("Erro ao carregar runas do jogador: " + e.getMessage());
             }
 
+            // Cria runas padrão caso não existam
             for (TipoRuna tipo : TipoRuna.values()) {
                 runas.put(tipo, runas.getOrDefault(tipo, new Runa(tipo, 0, 0)));
             }
@@ -168,7 +165,6 @@ public class RunasDatabaseManager {
         }
         return null;
     }
-
 
     // Método assíncrono para salvar dados do jogador
     public void salvarDadosJogadorAsync(RunasPlayerData playerData) {

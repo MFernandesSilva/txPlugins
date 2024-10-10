@@ -203,7 +203,7 @@ public class AtributosCommand implements CommandExecutor {
     }
 
     private boolean manipularAtributos(CommandSender sender, String[] args) {
-        if (!sender.hasPermission("txrpg.admin")){
+        if (!sender.hasPermission("txrpg.admin")) {
             sender.sendMessage(dm.np());
             return true;
         }
@@ -224,9 +224,9 @@ public class AtributosCommand implements CommandExecutor {
             return true;
         }
 
-        int quantidade;
+        double quantidade;
         try {
-            quantidade = Integer.parseInt(quantidadeStr);
+            quantidade = Double.parseDouble(quantidadeStr);
         } catch (NumberFormatException e) {
             sender.sendMessage(Mensagem.formatar(PREFIX + MSG_QUANTIDADE_INVALIDA));
             return true;
@@ -377,15 +377,20 @@ public class AtributosCommand implements CommandExecutor {
     private static ItemStack criarItemRunas(RunasPlayerData playerData) {
         List<String> lore = new ArrayList<>();
         lore.add(" ");
+
+        // Loop através dos tipos de runas
         for (TipoRuna tipoRuna : TipoRuna.values()) {
             Runa runa = playerData.getRunas().get(tipoRuna);
             int nivel = runa.getNivel();
-            if (nivel >= 1){
+
+            if (nivel >= 1) {
                 int subnivel = runa.getSubnivel();
                 int limite;
                 String cor;
                 String nivelString = String.valueOf(subnivel);
-                switch (tipoRuna){
+
+                // Definindo a cor com base no tipo de runa
+                switch (tipoRuna) {
                     case DANO:
                         cor = "&c";
                         break;
@@ -400,62 +405,79 @@ public class AtributosCommand implements CommandExecutor {
                         break;
                 }
 
-                if (subnivel >= 1 && subnivel <= 20) {
-                    limite = RunaAPI.getSubnivelMaximo(nivel);
-                } else if (subnivel >= 21 && subnivel <= 35) {
-                    limite = RunaAPI.getSubnivelMaximo(nivel);
-                    nivelString = String.valueOf(subnivel - 20);
-                } else if (subnivel >= 36 && subnivel <= 45) {
-                    limite = RunaAPI.getSubnivelMaximo(nivel);
-                    nivelString = String.valueOf(subnivel - 35);
-                } else if (subnivel >= 46 && subnivel <= 50) {
-                    limite = RunaAPI.getSubnivelMaximo(nivel);
-                    nivelString = String.valueOf(subnivel - 45);
-                } else if (subnivel >= 51 && subnivel <= 53) {
-                    limite = RunaAPI.getSubnivelMaximo(nivel);
-                    nivelString = String.valueOf(subnivel - 50);
-                } else {
-                    return null;
+                limite = calcularLimite(subnivel, nivel);
+                if (limite == -1) {
+                    return null; // Se o limite não for válido, retornar null
                 }
 
-                if (runa.getNivel() > 0) {
-                    lore.add(Mensagem.formatar(cor + "RUNA DE " + tipoRuna + " " + nivel + " &7(" + nivelString + "/" + limite + ")"));
-                    lore.add(Mensagem.formatar("&7+" + formatarNumero(runa.getValorAtributo()) + (tipoRuna == TipoRuna.AMPLIFICACAO ? "%" : "")));
-                    lore.add(" ");
-                }
+                // Adicionando informações da runa ao lore
+                lore.add(Mensagem.formatar(cor + "RUNA DE " + tipoRuna + " " + nivel + " &7(" + nivelString + "/" + limite + ")"));
+                lore.add(Mensagem.formatar("&7+" + formatarNumero(runa.getValorAtributo()) + (tipoRuna == TipoRuna.AMPLIFICACAO ? "%" : "")));
+                lore.add(" ");
             }
         }
 
-        lore.add(Mensagem.formatar("&c&lPROXIMO NÍVEL"));
-        lore.add(" ");
-        for (TipoRuna tipoRuna : TipoRuna.values()) {
+        // Verifica se todas as runas estão no nível 5 e subnível máximo
+        boolean runaMax = false;
+        for (TipoRuna tipoRuna : TipoRuna.values()){
             Runa runa = playerData.getRunas().get(tipoRuna);
-            int nivel = runa.getNivel();
-            int subnivel = runa.getSubnivel();
-            int limite = RunaAPI.getSubnivelMaximo(nivel);
-            String cor;
-            String nivelString = " ";
-            switch (tipoRuna){
-                case DANO:
-                    cor = "&c";
-                    break;
-                case DEFESA:
-                    cor = "&a";
-                    break;
-                case AMPLIFICACAO:
-                    cor = "&b";
-                    break;
-                default:
-                    cor = "&7";
-                    break;
-            }
-
-            if (runa.getNivel() >= 1 && runa.getNivel() <= 52) {
-                lore.add(Mensagem.formatar(cor + tipoRuna + ": &7+" + formatarNumero(runa.getValorAtributoProx())));
-            } else if (runa.getNivel() == 53) {
-                lore.add(Mensagem.formatar(cor + tipoRuna + ": &c&lNÍVEL MAXIMO"));
+            if (runa.getNivel() == 5 && runa.getSubnivel() == RunaAPI.getSubnivelMaximo(runa.getNivel())){
+                runaMax = true;
+                break;
             }
         }
+
+        /*
+        boolean todasNoMaximo = true;
+        for (TipoRuna tipoRuna : TipoRuna.values()){
+            Runa runa = playerData.getRunas().get(tipoRuna);
+            if (runa.getNivel() <= 5 && runa.getSubnivel() < RunaAPI.getSubnivelMaximo(runa.getNivel())){
+                todasNoMaximo = false;
+                break;
+            }
+        }
+         */
+
+        // Adiciona a informação sobre o próximo nível ou nível máximo
+        if (!runaMax) {
+            lore.add(Mensagem.formatar("&c&lNÍVEL MAXIMO"));
+        } else {
+            lore.add(Mensagem.formatar("&c&lPROXIMO NÍVEL"));
+            lore.add(" ");
+
+            // Informações sobre o próximo nível
+            for (TipoRuna tipoRuna : TipoRuna.values()) {
+                Runa runa = playerData.getRunas().get(tipoRuna);
+                int nivelProx = runa.getNivel();
+                int subNivelProx = runa.getSubnivel();
+
+                String cor;
+                // Definindo a cor com base no tipo de runa
+                switch (tipoRuna) {
+                    case DANO:
+                        cor = "&c";
+                        break;
+                    case DEFESA:
+                        cor = "&a";
+                        break;
+                    case AMPLIFICACAO:
+                        cor = "&b";
+                        break;
+                    default:
+                        cor = "&7";
+                        break;
+                }
+
+                if (nivelProx >= 1 && nivelProx <= 5) {
+                    if (subNivelProx < RunaAPI.getSubnivelMaximo(nivelProx)) {
+                        lore.add(Mensagem.formatar(cor + tipoRuna + ": &7+" + formatarNumero(runa.getValorAtributoProx())));
+                    } else {
+                        lore.add(Mensagem.formatar(cor + tipoRuna + ": &c&lNÍVEL MAXIMO"));
+                    }
+                }
+            }
+        }
+
         lore.add(" ");
         Material material = Material.getMaterial(4584);
         return new Item(material, 1, (short) 0)
@@ -465,17 +487,18 @@ public class AtributosCommand implements CommandExecutor {
                 .getIs();
     }
 
-    private static ItemStack criarItemReinos(ReinosPlayerData playerData){
+    private static ItemStack criarItemReinos(ReinosPlayerData playerData) {
         List<String> lore = new ArrayList<>();
         Reino reino = playerData.getReinos().get(TipoReino.REINO);
 
         int nivel = reino.getNivel();
-        if (nivel >= 1){
+        if (nivel >= 1) {
             int limite;
             String nivelString;
             String nivelString2 = String.valueOf(nivel);
             String cor;
 
+            // Definindo a cor e os limites com base no nível
             if (nivel >= 1 && nivel <= 20) {
                 cor = "&7&l";
                 nivelString = "MORTAL";
@@ -501,16 +524,19 @@ public class AtributosCommand implements CommandExecutor {
                 limite = 3;
                 nivelString2 = String.valueOf(nivel - 50);
             } else {
-                return null;
+                return null; // Se o nível não for válido, retornar null
             }
 
+            // Adicionando informações do reino ao lore
             lore.add(" ");
-            lore.add(Mensagem.formatar( cor + "REINO " + nivelString + " &7(" + nivelString2 + "/" + limite + ")"));
+            lore.add(Mensagem.formatar(cor + "REINO " + nivelString + " &7(" + nivelString2 + "/" + limite + ")"));
             lore.add(" ");
             lore.add(Mensagem.formatar("&cDANO: &7+" + formatarNumero(reino.getValorAtributo())));
             lore.add(Mensagem.formatar("&aDEFESA: &7+" + formatarNumero(reino.getValorAtributo())));
             lore.add(Mensagem.formatar("&bAMP. DE COMBATE: &7+" + formatarNumero(reino.getValorAtributo() / 1000) + "%"));
             lore.add(" ");
+
+            // Informações sobre o próximo nível
             if (nivel <= 52) {
                 lore.add(" ");
                 lore.add(Mensagem.formatar("&c&lPROXIMO NÍVEL"));
@@ -519,12 +545,13 @@ public class AtributosCommand implements CommandExecutor {
                 lore.add(Mensagem.formatar("&aDEFESA: &7+" + formatarNumero(reino.getValorAtributoProx())));
                 lore.add(Mensagem.formatar("&bAMP DE COMBATE: &7+" + formatarNumero(reino.getValorAtributoProx() / 1000) + "%"));
                 lore.add(" ");
-            } else if (nivel == 53){
+            } else if (nivel == 53) {
                 lore.add(" ");
                 lore.add(Mensagem.formatar("&c&lNÍVEL MAXIMO"));
                 lore.add(" ");
             }
         }
+
         lore.add(" ");
         Material material = Material.getMaterial(4543);
         return new Item(material, 1, (short) 0)
@@ -532,5 +559,21 @@ public class AtributosCommand implements CommandExecutor {
                 .setLore(lore)
                 .setUmbreakable(true)
                 .getIs();
+    }
+
+    // Método auxiliar para calcular o limite da runa
+    private static int calcularLimite(int subnivel, int nivel) {
+        if (subnivel >= 1 && subnivel <= 20) {
+            return RunaAPI.getSubnivelMaximo(nivel);
+        } else if (subnivel >= 21 && subnivel <= 35) {
+            return RunaAPI.getSubnivelMaximo(nivel);
+        } else if (subnivel >= 36 && subnivel <= 45) {
+            return RunaAPI.getSubnivelMaximo(nivel);
+        } else if (subnivel >= 46 && subnivel <= 50) {
+            return RunaAPI.getSubnivelMaximo(nivel);
+        } else if (subnivel >= 51 && subnivel <= 53) {
+            return RunaAPI.getSubnivelMaximo(nivel);
+        }
+        return -1; // Se o subnível não for válido, retornar -1
     }
 }

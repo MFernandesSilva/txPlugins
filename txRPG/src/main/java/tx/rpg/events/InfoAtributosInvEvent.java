@@ -183,8 +183,6 @@ public class InfoAtributosInvEvent implements Listener {
         lorePenDefesa.add(Mensagem.formatar("&750% da sua &bPENETRAÇÂO DE DEFESA"));
         lorePenDefesa.add(Mensagem.formatar("&7sera convertida em &cDANO"));
         lorePenDefesa.add(" ");
-        lorePenDefesa.add(Mensagem.formatar("&7&m+++++++++++++&7 &eNPC &7&m+++++++++++++"));
-        lorePenDefesa.add(" ");
         lorePenDefesa.add(Mensagem.formatar("&7&m+++++++++++++&7 &ePLAYER &7&m+++++++++++++"));
         lorePenDefesa.add(" ");
         lorePenDefesa.add(Mensagem.formatar("&7Quantidade da &aDEFESA &7 do oponente"));

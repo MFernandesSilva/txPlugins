@@ -62,8 +62,8 @@ public class txRPG extends JavaPlugin {
         DM.onEnable(this);
 
         // Agendar tarefas periódicas
-        Bukkit.getScheduler().runTaskTimer(this, this::atualizarAtributos, 20L, 20L);
-        Bukkit.getScheduler().runTaskTimer(this, this::atualizarAtributosAtrasado, 20L, 20L);
+        Bukkit.getScheduler().runTaskTimer(this, this::atualizarAtributos, 1L, 1L);
+        //Bukkit.getScheduler().runTaskTimer(this, this::atualizarAtributosAtrasado, 20L, 20L);
         Bukkit.getScheduler().runTaskTimer(this, this::regen, 100L, 100L);
         Bukkit.getScheduler().runTaskTimer(this, this::saveHealth, 1L, 1L);
 
@@ -102,6 +102,7 @@ public class txRPG extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new UseRunas(), this);
         getServer().getPluginManager().registerEvents(new InfoAtributosInvEvent(), this);
         getServer().getPluginManager().registerEvents(new LightningEvent(), this);
+        //getServer().getPluginManager().registerEvents(new UseReinos(), this);
     }
 
     // Método para obter a instância do plugin
@@ -149,7 +150,7 @@ public class txRPG extends JavaPlugin {
             CalcularStatus.calcularAtributos(playerData, runasPlayerData, reinosPlayerData);
         }
     }
-
+    /*
     private void atualizarAtributosAtrasado(){
         for (Player player : Bukkit.getOnlinePlayers()){
             UUID playerUUID = player.getUniqueId();
@@ -173,6 +174,7 @@ public class txRPG extends JavaPlugin {
             }
         }
     }
+     */
 
     private void regen() {
         // Regenerar vida dos jogadores

@@ -9,28 +9,23 @@ import org.bukkit.inventory.ItemStack;
 import tx.api.DM;
 import tx.api.Mensagem;
 import tx.rpg.data.ReinosPlayerData;
-import tx.rpg.data.RunasPlayerData;
 import tx.rpg.itens.Reinos;
 import tx.rpg.reinos.Reino;
 import tx.rpg.reinos.ReinoAPI;
 import tx.rpg.reinos.TipoReino;
-import tx.rpg.runas.Runa;
-import tx.rpg.runas.RunaAPI;
-import tx.rpg.runas.TipoRuna;
 import tx.rpg.txRPG;
 
 public class ReinosCommand implements CommandExecutor {
-    DM dm = new DM();
+    private final DM dm = new DM();
 
     @Override
-    public boolean onCommand(CommandSender s, Command c, String l, String[] args) {
-
-        if (!(s instanceof Player)) {
-            s.sendMessage(dm.cc());
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(dm.cc());
             return true;
         }
 
-        Player player = (Player) s;
+        Player player = (Player) sender;
 
         // Verifica se o jogador tem permissão para usar o comando
         if (!player.hasPermission("txrpg.reinos.op")) {
@@ -38,95 +33,91 @@ public class ReinosCommand implements CommandExecutor {
             return true;
         }
 
-        if (args.length == 2) {
-            // Comando: /reinos give <nivel>
-            if (args[0].equalsIgnoreCase("give")) {
-                if (!s.hasPermission("txrpg.admin")){
-                    s.sendMessage(dm.np());
-                    return true;
-                }
-                return handleGiveCommand(player, s, args);
-            }
-            // Comando: /reinos romper <player>
-            if (args[0].equalsIgnoreCase("romper")) {
-                if (!s.hasPermission("txrpg.admin")){
-                    s.sendMessage(dm.np());
-                    return true;
-                }
-                return handleRomperCommand(s, args);
-            }
-            // Comando: /reinos upgrade <player>
-            if (args[0].equalsIgnoreCase("upgrade")) {
-                if (!s.hasPermission("txrpg.admin")){
-                    s.sendMessage(dm.np());
-                    return true;
-                }
-                return handleUpgradeCommand(s, args);
-            }
-        } else if (args.length == 3){
-            // /reinos set <nivel> <player>
-            if (args[0].equalsIgnoreCase("set")){
-                if (!s.hasPermission("txrpg.admin")){
-                    s.sendMessage(dm.np());
-                    return true;
-                }
-                try {
-                    int nivel = Integer.parseInt(args[1]);
-                    Player target = Bukkit.getPlayer(args[2]);
+        switch (args.length) {
+            case 2:
+                return handleTwoArgsCommands(sender, args);
+            case 3:
+                return handleThreeArgsCommands(sender, args);
+            default:
+                return false;
+        }
+    }
 
-                    setarNivelReino(s, target, nivel);
-                } catch (Exception e){
-                    s.sendMessage(Mensagem.formatar("&cUso: /reinos set <nivel>"));
-                }
+    private boolean handleTwoArgsCommands(CommandSender sender, String[] args) {
+        String action = args[0].toLowerCase();
+
+        if (action.equals("give")) {
+            if (!sender.hasPermission("txrpg.admin")) {
+                sender.sendMessage(dm.np());
+                return true;
             }
+            return handleGiveCommand(sender, args);
+        }
+
+        if (action.equals("romper")) {
+            if (!sender.hasPermission("txrpg.admin")) {
+                sender.sendMessage(dm.np());
+                return true;
+            }
+            return handleRomperCommand(sender, args);
+        }
+
+        if (action.equals("upgrade")) {
+            if (!sender.hasPermission("txrpg.admin")) {
+                sender.sendMessage(dm.np());
+                return true;
+            }
+            return handleUpgradeCommand(sender, args);
+        }
+
+        return false;
+    }
+
+    private boolean handleThreeArgsCommands(CommandSender sender, String[] args) {
+        if (args[0].equalsIgnoreCase("set")) {
+            if (!sender.hasPermission("txrpg.admin")) {
+                sender.sendMessage(dm.np());
+                return true;
+            }
+            return handleSetCommand(sender, args);
         }
         return false;
     }
 
-    // Método para lidar com o comando give
-    //Comando: /reinos give <nivel>
-    private boolean handleGiveCommand(Player player, CommandSender s, String[] args) { // parei aqui, tem que fazer verificacao de nivel para por nome
-        if (!(s instanceof Player)){
-            s.sendMessage(dm.cc());
-            return true;
-        }
+    private boolean handleGiveCommand(CommandSender sender, String[] args) {
+        String nivelStr = args[1].toLowerCase();
+        ItemStack reino = obterRunaPorTipoENivel(nivelStr);
 
-        int nivel = obterNivel(s, args[1]);
-        if (nivel == -1) return true;
-
-        ItemStack reino = obterRunaPorTipoENivel(nivel);
         if (reino != null) {
-            player.getInventory().addItem(reino);
-            player.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&aVocê recebeu um reino nível " + nivel + "."));
+            ((Player) sender).getInventory().addItem(reino);
+            sender.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&aVocê recebeu um reino nível " + nivelStr + "."));
         } else {
-            player.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cErro ao criar a runa."));
+            sender.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cErro ao criar a runa ou nível inválido."));
         }
         return true;
     }
 
-    // Método para lidar com o comando romper
-    private boolean handleRomperCommand(CommandSender s, String[] args) {
-
+    private boolean handleRomperCommand(CommandSender sender, String[] args) {
         Player target = Bukkit.getPlayer(args[1]);
         if (target == null) {
-            s.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cJogador não encontrado."));
+            sender.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cJogador não encontrado."));
             return true;
         }
 
         ReinosPlayerData playerData = txRPG.getInstance().getReinosPlayerData().get(target.getUniqueId());
         if (playerData == null) {
-            s.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cJogador não encontrado ou sem atributos."));
+            sender.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cJogador não encontrado ou sem atributos."));
             return true;
         }
 
         Reino reino = playerData.getReinos().get(TipoReino.REINO);
         if (reino == null) {
-            s.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cJogador não possui este tipo de runa."));
+            sender.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cJogador não possui este tipo de runa."));
             return true;
         }
 
         if (!ReinoAPI.podeEvoluirReino(target, TipoReino.REINO)) {
-            s.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cA runa não pode ser rompida ainda."));
+            sender.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cA runa não pode ser rompida ainda."));
             return true;
         }
 
@@ -134,123 +125,147 @@ public class ReinosCommand implements CommandExecutor {
         reino.setNivel(novoNivel);
 
         txRPG.getInstance().reinosDB().salvarDadosJogadorAsync(playerData);
-        s.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&7Reino rompido com sucesso para &c" + target.getName() + "&7."));
+        sender.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&7Reino rompido com sucesso para &c" + target.getName() + "&7."));
         target.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&7Sua runa foi rompida para o nível &c" + novoNivel + "&7!"));
 
         return true;
     }
 
-    // Método para lidar com o comando upgrade
-    // Comando: /reinos upgrade <player>
-    private boolean handleUpgradeCommand(CommandSender s, String[] args) {
-
+    private boolean handleUpgradeCommand(CommandSender sender, String[] args) {
         Player target = Bukkit.getPlayer(args[1]);
-
         if (target == null) {
-            s.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cJogador não encontrado."));
+            sender.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cJogador não encontrado."));
             return true;
         }
 
         ReinosPlayerData playerData = txRPG.getInstance().getReinosPlayerData().get(target.getUniqueId());
-
         if (playerData == null) {
-            s.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cJogador não encontrado ou sem atributos."));
+            sender.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cJogador não encontrado ou sem atributos."));
             return true;
         }
 
         Reino reino = playerData.getReinos().get(TipoReino.REINO);
         if (reino == null) {
-            s.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cJogador não possui este tipo de runa."));
+            sender.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cJogador não possui este tipo de runa."));
             return true;
         }
 
         // Lógica para atualizar a runa
-        if (reino.getNivel() == 0){
+        if (reino.getNivel() == 0) {
             reino.setNivel(1);
         } else if (reino.getNivel() < ReinoAPI.getNivelMaximo(reino.getNivel())) {
             reino.setNivel(reino.getNivel() + 1);
         } else {
-            target.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cO reino já está no nivel máximo ou precisa romper."));
+            target.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cO reino já está no nível máximo ou precisa romper."));
             return true;
         }
 
         txRPG.getInstance().reinosDB().salvarDadosJogadorAsync(playerData);
-        s.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&7Reino atualizado com sucesso para &c" + target.getName() + "&7."));
-        target.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&7Seu reino foi atualizada."));
+        sender.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&7Reino atualizado com sucesso para &c" + target.getName() + "&7."));
+        target.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&7Seu reino foi atualizado."));
 
         return true;
     }
 
+    private boolean handleSetCommand(CommandSender sender, String[] args) {
+        try {
+            int nivel = Integer.parseInt(args[1]);
+            Player target = Bukkit.getPlayer(args[2]);
+            setarNivelReino(sender, target, nivel);
+        } catch (Exception e) {
+            sender.sendMessage(Mensagem.formatar("&cUso: /reinos set <nivel>"));
+        }
+        return true;
+    }
+
     // Método auxiliar para obter o nível
-    private int obterNivel(CommandSender s, String nivelArg) {
+    private int obterNivel(CommandSender sender, String nivelArg) {
         try {
             int nivel = Integer.parseInt(nivelArg);
             if (nivel < 1 || nivel > 53) {
-                s.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cNível inválido."));
+                sender.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cNível inválido."));
                 return -1;
             }
             return nivel;
         } catch (NumberFormatException e) {
-            s.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cNível deve ser um número."));
+            sender.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cNível deve ser um número."));
             return -1;
         }
     }
 
     // Método auxiliar para obter a runa por tipo e nível
-    private ItemStack obterRunaPorTipoENivel(int nivel) {
-        Reinos reinos = new Reinos();
+    private ItemStack obterRunaPorTipoENivel(String nivelStr) {
+        int nivel = -1; // Definindo um nível padrão inválido
 
-        if (nivel >= 1 && nivel <= 20){
-            return reinos.reinoMortal[nivel - 1];
+        switch (nivelStr) {
+            case "mortal":
+                nivel = 1; // Defina o intervalo que você deseja
+                break;
+            case "combate":
+                nivel = 21; // Defina o intervalo que você deseja
+                break;
+            case "celestial":
+                nivel = 36; // Defina o intervalo que você deseja
+                break;
+            case "imortal":
+                nivel = 46; // Defina o intervalo que você deseja
+                break;
+            case "deus":
+                nivel = 51; // Defina o intervalo que você deseja
+                break;
+            default:
+                return null; // Retorna null se o nível não for válido
+        }
+
+        return obterRunaPorNivel(nivel); // Chama o método existente que cria a runa com base no nível
+    }
+
+    private ItemStack obterRunaPorNivel(int nivel) {
+        // Sua lógica existente para obter runa por nível
+        // Exemplo:
+        if (nivel >= 1 && nivel <= 20) {
+            return new Reinos().reinoMortal[nivel - 1];
         } else if (nivel >= 21 && nivel <= 35) {
-            return reinos.reinoDeCombate[nivel - 1];
+            return new Reinos().reinoDeCombate[nivel - 1];
         } else if (nivel >= 36 && nivel <= 45) {
-            return reinos.reinoCelestial[nivel - 1];
-        } else if (nivel >= 46 && nivel <= 50){
-            return reinos.reinoImortal[nivel - 1];
+            return new Reinos().reinoCelestial[nivel - 1];
+        } else if (nivel >= 46 && nivel <= 50) {
+            return new Reinos().reinoImortal[nivel - 1];
         } else if (nivel >= 51 && nivel <= 53) {
-            return reinos.reinoDeus[nivel - 1];
+            return new Reinos().reinoDeus[nivel - 1];
         } else {
-            return null;
+            return null; // Nível inválido
         }
     }
 
-    private void setarNivelReino(CommandSender sender, Player player, int nivel){
-
-        if (player == null){
+    private void setarNivelReino(CommandSender sender, Player player, int nivel) {
+        if (player == null) {
             sender.sendMessage(Mensagem.formatar("&cPrecisa informar o jogador"));
             return;
         }
 
-        if (!player.isOnline()){
+        if (!player.isOnline()) {
             sender.sendMessage(Mensagem.formatar("&cJogador não está online"));
             return;
         }
+
         ReinosPlayerData reinosPlayerData = txRPG.getInstance().getReinosPlayerData().get(player.getUniqueId());
+
+        if (reinosPlayerData == null) {
+            sender.sendMessage(Mensagem.formatar("&cJogador não possui dados de reino."));
+            return;
+        }
+
         Reino reino = reinosPlayerData.getReinos().get(TipoReino.REINO);
 
+        if (reino == null) {
+            sender.sendMessage(Mensagem.formatar("&cJogador não possui reino."));
+            return;
+        }
+
         reino.setNivel(nivel);
-
-        String reinoString = "";
-
-        if (nivel >= 1 && nivel <= 20){
-            reinoString = Mensagem.formatar("&7MORTAL");
-        } else if (nivel >= 21 && nivel <= 35) {
-            reinoString = Mensagem.formatar("&aDE COMBATE");
-        } else if (nivel >= 36 && nivel <= 45) {
-            reinoString = Mensagem.formatar("&5CELESTIAL");
-        } else if (nivel >= 46 && nivel <= 50){
-            reinoString = Mensagem.formatar("&cIMORTAL");
-        } else if (nivel >= 51 && nivel <= 53) {
-            reinoString = Mensagem.formatar("&6DEUS");
-        }
-
-
-        if (sender != player) {
-            player.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "seu reino foi setado para " + reinoString));
-            sender.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "reino de &e" + player.getName() + " foi setado para " + reinoString));
-        } else {
-            sender.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "seu reino foi setado para " + reinoString));
-        }
+        txRPG.getInstance().reinosDB().salvarDadosJogadorAsync(reinosPlayerData);
+        sender.sendMessage(Mensagem.formatar("&7O reino de &c" + player.getName() + "&7 foi setado para o nível &c" + nivel + "&7."));
+        player.sendMessage(Mensagem.formatar("&7Seu nível foi setado para &c" + nivel + "&7."));
     }
 }

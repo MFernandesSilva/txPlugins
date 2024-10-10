@@ -37,60 +37,20 @@ public class RunasCommand implements CommandExecutor {
         if (args.length == 3) {
             // Comando: /runas give <tipo> <nivel>
             if (args[0].equalsIgnoreCase("give")) {
-                if (!s.hasPermission("txrpg.admin")){
-                    s.sendMessage(dm.np());
-                    return true;
-                }
                 return handleGiveCommand(player, s, args);
             }
             // Comando: /runas romper <tipo> <player>
             if (args[0].equalsIgnoreCase("romper")) {
-                if (!s.hasPermission("txrpg.admin")){
-                    s.sendMessage(dm.np());
-                    return true;
-                }
                 return handleRomperCommand(s, args);
             }
             // Comando: /runas upgrade <tipo> <player>
             if (args[0].equalsIgnoreCase("upgrade")) {
-                if (!s.hasPermission("txrpg.admin")){
-                    s.sendMessage(dm.np());
-                    return true;
-                }
                 return handleUpgradeCommand(s, args);
             }
-        } else if (args.length == 5){
+        } else if (args.length == 5) {
             // /runas set <tipo> <nivel> <subnivel> <player>
-            if (args[0].equalsIgnoreCase("set")){
-                if (!s.hasPermission("txrpg.admin")){
-                    s.sendMessage(dm.np());
-                    return true;
-                }
-                try {
-                    TipoRuna tipo;
-                    String stringTipo = args[1].toUpperCase();
-                    int nivel = Integer.parseInt(args[2]);
-                    int subnivel = Integer.parseInt(args[3]);
-                    Player target = Bukkit.getPlayer(args[4]);
-
-                    switch (stringTipo){
-                        case "DANO":
-                            tipo = TipoRuna.DANO;
-                            break;
-                        case "DEFESA":
-                            tipo = TipoRuna.DEFESA;
-                            break;
-                        case "AMPLIFICACAO":
-                            tipo = TipoRuna.AMPLIFICACAO;
-                            break;
-                        default:
-                            s.sendMessage(Mensagem.formatar("&cTipo de runa inválida"));
-                            return true;
-                    }
-                    setarNivelRuna(s, target, tipo, nivel, subnivel);
-                } catch (Exception e){
-                    s.sendMessage(Mensagem.formatar("&cUso: /runas set <tipo> <nivel> <subnivel>"));
-                }
+            if (args[0].equalsIgnoreCase("set")) {
+                return handleSetCommand(s, args);
             }
         }
         return false;
@@ -98,8 +58,8 @@ public class RunasCommand implements CommandExecutor {
 
     // Método para lidar com o comando give
     private boolean handleGiveCommand(Player player, CommandSender s, String[] args) {
-        if (!(s instanceof Player)){
-            s.sendMessage(dm.cc());
+        if (!s.hasPermission("txrpg.admin")) {
+            s.sendMessage(dm.np());
             return true;
         }
 
@@ -121,7 +81,6 @@ public class RunasCommand implements CommandExecutor {
 
     // Método para lidar com o comando romper
     private boolean handleRomperCommand(CommandSender s, String[] args) {
-
         TipoRuna tipoRuna = obterTipoRuna(s, args[1]);
         if (tipoRuna == null) return true;
 
@@ -161,7 +120,6 @@ public class RunasCommand implements CommandExecutor {
 
     // Método para lidar com o comando upgrade
     private boolean handleUpgradeCommand(CommandSender s, String[] args) {
-
         TipoRuna tipoRuna = obterTipoRuna(s, args[1]);
         if (tipoRuna == null) return true;
 
@@ -201,6 +159,41 @@ public class RunasCommand implements CommandExecutor {
         return true;
     }
 
+    // Método para lidar com o comando set
+    private boolean handleSetCommand(CommandSender s, String[] args) {
+        if (!s.hasPermission("txrpg.admin")) {
+            s.sendMessage(dm.np());
+            return true;
+        }
+
+        try {
+            TipoRuna tipo;
+            String stringTipo = args[1].toUpperCase();
+            int nivel = Integer.parseInt(args[2]);
+            int subnivel = Integer.parseInt(args[3]);
+            Player target = Bukkit.getPlayer(args[4]);
+
+            switch (stringTipo) {
+                case "DANO":
+                    tipo = TipoRuna.DANO;
+                    break;
+                case "DEFESA":
+                    tipo = TipoRuna.DEFESA;
+                    break;
+                case "AMPLIFICACAO":
+                    tipo = TipoRuna.AMPLIFICACAO;
+                    break;
+                default:
+                    s.sendMessage(Mensagem.formatar("&cTipo de runa inválida"));
+                    return true;
+            }
+            setarNivelRuna(s, target, tipo, nivel, subnivel);
+        } catch (Exception e) {
+            s.sendMessage(Mensagem.formatar("&cUso: /runas set <tipo> <nivel> <subnivel>"));
+        }
+        return true;
+    }
+
     // Método auxiliar para obter o tipo de runa
     private TipoRuna obterTipoRuna(CommandSender s, String tipoArg) {
         try {
@@ -216,12 +209,12 @@ public class RunasCommand implements CommandExecutor {
         try {
             int nivel = Integer.parseInt(nivelArg);
             if (nivel < 1 || nivel > 5) {
-                s.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cNível inválido (1-5)."));
+                s.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cNível deve ser entre 1 e 5."));
                 return -1;
             }
             return nivel;
         } catch (NumberFormatException e) {
-            s.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cNível deve ser um número."));
+            s.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cNível inválido."));
             return -1;
         }
     }
@@ -241,31 +234,24 @@ public class RunasCommand implements CommandExecutor {
         }
     }
 
-    private void setarNivelRuna(CommandSender sender, Player player, TipoRuna tipo, int nivel, int subnivel){
-
-        if (player == null){
-            sender.sendMessage(Mensagem.formatar("&cPrecisa informar o jogador"));
+    // Método auxiliar para setar o nível da runa
+    private void setarNivelRuna(CommandSender s, Player target, TipoRuna tipo, int nivel, int subnivel) {
+        RunasPlayerData playerData = txRPG.getInstance().getRunasPlayerData().get(target.getUniqueId());
+        if (playerData == null) {
+            s.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cJogador não encontrado ou sem atributos."));
             return;
         }
 
-        if (!player.isOnline()){
-            sender.sendMessage(Mensagem.formatar("&cJogador não está online"));
+        Runa runa = playerData.getRunas().get(tipo);
+        if (runa == null) {
+            s.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cJogador não possui este tipo de runa."));
             return;
         }
-        RunasPlayerData runasPlayerData = txRPG.getInstance().getRunasPlayerData().get(player.getUniqueId());
-        Runa runa = runasPlayerData.getRunas().get(tipo);
 
         runa.setNivel(nivel);
         runa.setSubnivel(subnivel);
-
-        if (sender != player) {
-            player.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "sua runa de &c"
-                    + tipo + " &7foi setada para &cNÍVEL &e" + nivel + " &cSUBNÍVEL &e" + subnivel));
-            sender.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "runa de &e" + player.getName() + " de &c"
-                    + tipo + " &7foi setada para &cNÍVEL &e" + nivel + " &cSUBNÍVEL &e" + subnivel));
-        } else {
-            sender.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "sua runa de &c"
-                    + tipo + " &7foi setada para &cNÍVEL &e" + nivel + " &cSUBNÍVEL &e" + subnivel));
-        }
+        txRPG.getInstance().runasDB().salvarDadosJogadorAsync(playerData);
+        s.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&7Nível da runa de &c" + target.getName() + " &7atualizado com sucesso."));
+        target.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&7Seu nível de runa de &c" + tipo + " &7foi atualizado."));
     }
 }

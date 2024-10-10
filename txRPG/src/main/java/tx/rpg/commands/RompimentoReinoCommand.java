@@ -8,22 +8,21 @@ import org.bukkit.inventory.ItemStack;
 import tx.api.DM;
 import tx.api.Mensagem;
 import tx.rpg.itens.Reinos;
-import tx.rpg.itens.Runas;
-import tx.rpg.runas.TipoRuna;
 import tx.rpg.txRPG;
 
 public class RompimentoReinoCommand implements CommandExecutor {
 
     @Override
-    public boolean onCommand(CommandSender s, Command c, String l, String[] args) {
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         DM dm = new DM();
 
-        if (!(s instanceof Player)) {
-            s.sendMessage(dm.cc());
+        // Verifica se o remetente é um jogador
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(dm.cc());
             return true;
         }
 
-        Player player = (Player) s;
+        Player player = (Player) sender;
 
         // Verifica se o jogador tem permissão para usar o comando
         if (!player.hasPermission("txrpg.admin")) {
@@ -31,22 +30,18 @@ public class RompimentoReinoCommand implements CommandExecutor {
             return true;
         }
 
-        // Verifica se o comando é /rompimento give <nivel>
-        if (args.length < 2 || !args[0].equalsIgnoreCase("give")) {
-            player.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cUso: /rompimento give <tipo> <nivel>"));
+        // Verifica se o comando é /rompimentoreinos give <tipo>
+        if (!isValidCommandUsage(player, args)) {
             return true;
         }
 
-        int nivel = obterNivel(s, args[1]);
-        if (nivel == -1) {
-            return true;
-        }
+        String tipo = args[1].toLowerCase();
 
         // Adiciona o rompimento ao inventário do jogador
-        ItemStack rompimento = obterRompimentoPorTipoENivel(nivel);
+        ItemStack rompimento = getRompimentoByType(tipo);
         if (rompimento != null) {
             player.getInventory().addItem(rompimento);
-            player.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&aVocê recebeu um rompimento nível " + nivel + "."));
+            player.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&aVocê recebeu um rompimento do tipo " + tipo + "."));
         } else {
             player.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cErro ao criar o rompimento."));
         }
@@ -54,47 +49,30 @@ public class RompimentoReinoCommand implements CommandExecutor {
         return true;
     }
 
-    // Método auxiliar para obter o tipo de runa
-    private TipoRuna obterTipoRuna(CommandSender s, String tipoArg) {
-        try {
-            return TipoRuna.valueOf(tipoArg.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            s.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cTipo de runa inválido."));
-            return null;
+    // Método auxiliar para verificar o uso correto do comando
+    private boolean isValidCommandUsage(Player player, String[] args) {
+        if (args.length < 2 || !args[0].equalsIgnoreCase("give")) {
+            player.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cUso: /rompimentoreinos give <tipo>"));
+            return false;
         }
+        return true;
     }
 
-    // Método auxiliar para obter o nível
-    private int obterNivel(CommandSender s, String nivelArg) {
-        try {
-            int nivel = Integer.parseInt(nivelArg);
-            if (nivel < 1 || nivel > 53) {
-                s.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cNível inválido."));
-                return -1;
-            }
-            return nivel;
-        } catch (NumberFormatException e) {
-            s.sendMessage(Mensagem.formatar(txRPG.getInstance().getConfiguracao().getPrefix() + "&cNível deve ser um número."));
-            return -1;
-        }
-    }
-
-    // Método auxiliar para obter o rompimento por tipo e nível
-    private ItemStack obterRompimentoPorTipoENivel(int nivel) {
-
-        Reinos reinos = new Reinos();
-        if (nivel >= 1 && nivel <= 20){
-            return reinos.rompimentoMortal[nivel - 1];
-        } else if (nivel >= 21 && nivel <= 35) {
-            return reinos.rompimentoDeCombate[nivel - 1];
-        } else if (nivel >= 36 && nivel <= 45) {
-            return reinos.rompimentoCelestial[nivel - 1];
-        } else if (nivel >= 46 && nivel <= 50){
-            return reinos.rompimentoImortal[nivel - 1];
-        } else if (nivel >= 51 && nivel <= 53) {
-            return reinos.rrompimentoDeus[nivel - 1];
-        } else {
-            return null;
+    // Método auxiliar para obter o rompimento por tipo
+    private ItemStack getRompimentoByType(String tipo) {
+        switch (tipo) {
+            case "mortal":
+                return new Reinos().rompimentoMortal[19]; // Exemplo, retorna o primeiro rompimento mortal
+            case "combate":
+                return new Reinos().rompimentoDeCombate[34]; // Exemplo, retorna o primeiro rompimento de combate
+            case "celestial":
+                return new Reinos().rompimentoCelestial[44]; // Exemplo, retorna o primeiro rompimento celestial
+            case "imortal":
+                return new Reinos().rompimentoImortal[49]; // Exemplo, retorna o primeiro rompimento imortal
+            case "deus":
+                return new Reinos().rompimentoDeus[52]; // Exemplo, retorna o primeiro rompimento deus
+            default:
+                return null; // Retorna null se o tipo não for válido
         }
     }
 }
